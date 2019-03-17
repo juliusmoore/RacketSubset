@@ -1,5 +1,5 @@
 #lang racket
-(define (execute x state) "skill")
+
 (define (eval_add x state)
   (if (pair? x)
     (if(pair? (car(cdr x)))
@@ -76,13 +76,13 @@
     (error "Error in function eval_GT, x is not a pair.")))
 
 (define (eval_car x state)
-  (if (pair? x)
-    (car x)
+  (if (list? x)
+    car x
     (error "Error in function eval_car, x is not a pair.")))
 
 (define (eval_cdr x state)
-  (if (pair? x)
-    (cdr x)
+  (if (list? x)
+    cdr x
     (error "Error in function eval_cdr, x is not a list.")))
 
 (define (eval_cons x state)
@@ -99,20 +99,10 @@
 
 (define (eval_num? x state) (if (number? x) #t #f))
 
-(define (eval_quote x state) (quote x) )
+(define (eval_lambda x state) '"fricken empty")
 
+(define (eval_let x state) '"fricken empty")
 
-(define (eval_if x state)
-  (if (list? x)
-    (if (list? (first x))
-      (if(execute((first x) state))
-        (execute ((second x) state))
-        (execute ((third x) state)))
-      (error "everything is on fire in eval_if."))
-    (error "everything is on fire in eval_if.")))
+(define (eval_letrec x state) '"fricken empty")
 
-(define (eval_lambda x state) "empty")
-
-(define (eval_let x state) "empty")
-
-(define (eval_letrec x state)"empty")
+(define (execute rkt state) '"fexe")
