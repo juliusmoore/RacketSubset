@@ -23,11 +23,27 @@
     (error "Error in function division, x is not a pair.")))
 
 
-(define (startEval rkt) (execute rkt '()))
+(define (startEval rkt) (execute rkt '(())))
 
 (define (eval_quote rkt state) (quote rkt))
 
+(define (getPairWithKey key list)
+  (if (pair? list)
+      (if (null? list)
+          (error key "is undefined")
+          (let ([candidate (car list)])
+            (if (pair? candidate)
+                (if (equal? (car candidate) key)
+                    (cdr candidate)
+                    (getPairWithKey key (cdr list)))
+                (error "The state has been corrupted by an unparist"))))
+      (error "The state is not a pair!"))
+  )
 
+(define (execute_var func state)
+ (if (pair? func)
+     (error "THis is not a variable : " func " in state : " state)
+     (execute getPairWithKey(func state) state)))
 
 (define (execute rkt state) 
   (if (pair? rkt)
@@ -35,7 +51,7 @@
           '()
           (let ([func (car rkt)] [defi (cdr rkt)])
             (if (pair? func)
-                (print "You Fucked Up : " func "should not be a list. Found in: " rkt)
+                (error "You Fucked Up : " func "should not be a list. Found in: " rkt) ;insert lambdas here
                 (cond
                   [(equal? func '+) (eval_add defi state)]
                   [(equal? func '-) (eval_sub defi state)]
@@ -55,11 +71,11 @@
                   [(equal? func 'let) (eval_let defi state)]
                   [(equal? func 'letrec) (eval_letrec defi state)]
                   [(equal? func 'quote) (eqval_quote defi state)] ;quotes
-                  [else (print "You Fucked Up : " func "is not implemented. Found in: " rkt)])
+                  [else (execute_var func state)])
                 )))
       (if (number? rkt)
           rkt
-          '"Sorry no variables"
+          (error "You Fucked Up (NaN): " rkt " in state : " state)
           )
       )
   )
