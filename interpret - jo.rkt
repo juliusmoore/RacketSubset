@@ -114,12 +114,12 @@
 
 ;Only implement the plain lambda syntax without support
 ;for keyword or optional arguments. Assume there is only one expression in the body.
-;((lambda{first} (args) {second} ---body---- {rest(three)}){car} {cdr})
+; rational ((lambda{first} (args) {second} ---body---- {rest or three}){car} {cdr})
 (define (eval_lambda x state)
 (if (and(and(pair? car(second(x))) (pair? car(third(x)))) (pair? cdr(x))) 
-    ((lambda (execute(car(second(x))), state)  (execute(car(third(x)), state)))
+    ((lambda (execute(second(car(x))), state)  (execute(third(car(x)), state)))
      (execute((cdr(x)) state)))
-(error "Justin's lambda function broke again.")))
+(error "Justin's lambda function broke again. what an idiot.")))
 
 (define (eval_let x state) "empty")
 
