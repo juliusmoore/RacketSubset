@@ -56,7 +56,7 @@
       )
   )
 
-
+;this function adds two values 
 (define (eval_add x state)
   (if (pair? (car x))
     (if(pair? (car(cdr x)))
@@ -65,7 +65,7 @@
     (if(pair? (car(cdr x)))
       (+ (car x) (execute(car(cdr x)) state))
       (+ (car x) (car(cdr x))))))
-
+;this function subtracts  two values 
 (define (eval_sub x state)
   (if (pair? (car x))
       (if(pair? (car(cdr x)))
@@ -75,6 +75,7 @@
          (- (car x) (execute(car(cdr x)) state))
          (- (car x) (car(cdr x))))))
 
+;this function multiply  two values 
 (define (eval_mult x state)
   (if (pair? (car x))
       (if(pair? (car(cdr x)))
@@ -83,7 +84,7 @@
       (if(pair? (car(cdr x)))
          (* (car x) (execute(car(cdr x)) state))
          (* (car x) (car(cdr x))))))
-
+;this function divides two values 
 (define (eval_div x state)
   (if (pair? (car x))
    (if(pair? (car(cdr x)))
@@ -93,7 +94,7 @@
       (/ (car x) (execute(car(cdr x)) state))
       (/ (car x) (car(cdr x))))))
 
-
+;this function checks to see if two values are equal, but with equal?.
 (define (eval_equal x state)
   (if (pair? (car x))
    (if(pair? (car(cdr x)))
@@ -102,7 +103,7 @@
     (if(pair? (car(cdr x)))
       (equal? (car x) (execute(car(cdr x)) state))
       (equal? (car x) (car(cdr x))))))
-
+;this function checks to see if two values are equal, but with =.
 (define (eval_eq x state)
   (if (pair? (car x))
    (if(pair? (car(cdr x)))
@@ -112,7 +113,7 @@
       (= (car x) (execute(car(cdr x)) state))
       (= (car x) (car(cdr x))))))
 
-;staying the same or increasing
+; this function checks to see if left is less then or equal to right.
 (define (eval_LTE x state)
    (if (pair? (car x))
    (if(pair? (car(cdr x)))
@@ -122,7 +123,7 @@
       (<= (car x) (execute(car(cdr x)) state))
       (<= (car x) (car(cdr x))))))
 
-;increasing order
+; this function checks to see if left is less then to right.
 (define (eval_LT x state)
    (if (pair? (car x))
    (if(pair? (car(cdr x)))
@@ -132,7 +133,7 @@
       (< (car x) (execute(car(cdr x)) state))
       (< (car x) (car(cdr x))))))
 
-;decreasing order or staying the same
+;This function checks to see if left is greater then or equal to right.
 (define (eval_GTE x  state)
    (if (pair? (car x))
    (if(pair? (car(cdr x)))
@@ -142,7 +143,7 @@
       (>= (car x) (execute(car(cdr x)) state))
       (>= (car x) (car(cdr x))))))
 
-;decreasing order
+;This function checks to see if left is greater then to right.
 (define (eval_GT x  state)
   (if (pair? (car x))
    (if(pair? (car(cdr x)))
@@ -152,15 +153,25 @@
       (> (car x) (execute(car(cdr x)) state))
       (> (car x) (car(cdr x))))))
 
+;function outputs first value of a list.
 (define (eval_car x state)
-  (if (pair? x)
-    (car x)
-    (car(execute(x) state))))
+  (if (null? x)
+     (error "input is null for Eval_Car")
+     (if (pair? x)
+         (caadr(append* x)) ; car car cdr
+         (if (pair? (execute(x) state) ) 
+             (car(execute(x) state))
+             (error "input is not a pair for eval_car.")))))
 
+;function outputs rest of the values of a list.
 (define (eval_cdr x state)
-  (if (pair? x)
-    (cdr x)
-    (cdr(execute(x) state))))
+  (if (null? x)
+     (error "input is null for Eval_Car")
+     (if (list? x)        
+         (cdadr(append* x)) ;cdr car cdr
+         (if (list? (execute(x) state) ) 
+             (cdr(execute(x) state))
+             (error "input is not a list.")))))
 
 (define (eval_cons x state)
   (if (and  (pair? x) (pair? (cdr x)))
