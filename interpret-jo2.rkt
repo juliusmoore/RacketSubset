@@ -67,6 +67,7 @@
          (if(pair? (car(cdr x)))
             (+ (car x) (execute(car(cdr x)) state))
             (+ (car x) (car(cdr x)))))))
+
 ;this function subtracts  two values 
 (define (eval_sub x state)
     (if (null? x)
@@ -90,6 +91,7 @@
          (if(pair? (car(cdr x)))
             (* (car x) (execute(car(cdr x)) state))
             (* (car x) (car(cdr x)))))))
+
 ;this function divides two values 
 (define (eval_div x state)
     (if (null? x)
@@ -113,6 +115,7 @@
          (if(pair? (car(cdr x)))
             (equal? (car x) (execute(car(cdr x)) state))
             (equal? (car x) (car(cdr x)))))))
+
 ;this function checks to see if two values are equal, but with =.
 (define (eval_eq x state)
     (if (null? x)
@@ -195,7 +198,7 @@
 
 (define (eval_cons x state)
   (if (and  (pair? x) (pair? (cdr x)))
-    (cons car x cdr x)
+    (cons (car x) (car (cdr x)))
     (error "Error in function eval_cons, x is not a pair.")))
 
 ;logical operators
