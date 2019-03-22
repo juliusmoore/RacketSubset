@@ -252,9 +252,9 @@
 (define (eval_if x state)
   (if (list? x)
     (if (list? (first x))
-      (if(execute((first x) state))
-        (execute ((second x) state))
-        (execute ((third x) state)))
+      (if(execute((car (first x)) state))
+        (execute ((car (second x)) state))
+        (execute ((car (third x)) state)))
       (error "everything is on fire in eval_if."))
     (error "everything is on fire in eval_if.")))
 
