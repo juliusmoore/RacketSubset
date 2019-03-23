@@ -238,11 +238,16 @@
       (not (execute(car x)) (execute(car(cdr x) state)))
       (not (execute(car x)) (car(cdr x))))))
 
-(define (eval_pair? x state) (if (pair? x) #t #f))
+(define (eval_pair? x state) (if (pair? (car x)) #t #f))
 
-(define (eval_list? x state) (if (list? x) #t #f))
+(define (eval_list? x state) (if (list? (car x)) #t #f))
 
-(define (eval_null? x state) (if (null? x) #t #f))
+(define (eval_null? x state)
+  (if (null? x)
+      #t
+      (if (null? (car x) )
+          #t
+          #f)))
 
 (define (eval_num? x state) (if (number? x) #t #f))
 
@@ -269,7 +274,10 @@
   (if (equal? 1 (length(second(car x)))) ; If length is one do simple version of the lambda algorithm
       (let ([a (second(car x))] ; first param
             [c (cadr x)]) ; car cdr  value of first param
-       ( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list c)) state))
+       ;add if lambda
+       (if (list? c)
+           ( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list (execute c state))) state)
+           ( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list c)) state)))
       ;else this is the more complicated version
       (let ;length 2 algorithm 
           ([a (car(second(car x)))] ; first param
