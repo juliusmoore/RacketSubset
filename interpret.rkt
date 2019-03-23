@@ -50,8 +50,12 @@
                   [else (execute_var func defi state)])
                 )))
       (if (number? rkt)
-          rkt
-          (error "You Fucked Up (NaN): " rkt " in state : " state)
+          rkt ;only if its a literal, or a representation of a literal, is this "ok"
+          (let ([val (getPairWithKey rkt state)])
+            (if (number? val)
+                val
+                (error "You Fucked Up: Attempted to use " rkt " defined using a list as a literal. state : " state))
+            )
           )
       )
   )
@@ -279,25 +283,25 @@
 
 (define (produceExecutedPair p state)
   (if (and (pair? p) (not (null? p)))
-  ((car p) . (execute (cdr p) state))
+  (cons (car p) (execute (car (cdr p)) state))
   (error "You have caused a calamity: produceExecutedPair on " p " state : " state)))
 
 (define (evalToState vars state)
   (if (and (pair? vars) (not (null? vars)))
-      (let ([addition (produceExecutedPair (car vars))] [rest (cdr vars)])
+      (let ([addition (produceExecutedPair (car vars) state)] [rest (cdr vars)])
         (if (null? rest)
-            (cons addition (state))
+            (cons addition (cons state '()))
                (cons addition ((evalToState rest state)))))
       (error "You have caused a calamity: evalToState on " vars "state : " state)))
 
  ;evaluate then store
 (define (eval_let x state)
   (if (and (pair? x) (equal? (length x) 2))
-      (execute (cdr x) (evalToState (car x) state)) 
+      (execute (car (cdr x)) (evalToState (car x) state)) 
       (error "You have caused a calamity: let on " x " state : " state)))
 
  ;store then evaluate
 (define (eval_letrec x state)
   (if (and (pair? x) (equal? (length x) 2))
-      (execute (cdr x) (addToState (car x) state))
+      (execute (car (cdr x)) (addToState (car x) state))
       (error "You have caused a calamity: letrec on " x " state : " state)))
