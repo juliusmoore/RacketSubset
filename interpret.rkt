@@ -242,11 +242,16 @@
       (not (execute(car x)) (execute(car(cdr x) state)))
       (not (execute(car x)) (car(cdr x))))))
 
-(define (eval_pair? x state) (if (pair? x) #t #f))
+(define (eval_pair? x state) (if (pair? (car x)) #t #f))
 
-(define (eval_list? x state) (if (list? x) #t #f))
+(define (eval_list? x state) (if (list? (car x)) #t #f))
 
-(define (eval_null? x state) (if (null? x) #t #f))
+(define (eval_null? x state)
+  (if (null? x)
+      #t
+      (if (null? (car x) )
+          #t
+          #f)))
 
 (define (eval_num? x state) (if (number? x) #t #f))
 
@@ -256,9 +261,10 @@
 (define (eval_if x state)
   (if (list? x)
     (if (list? (first x))
-      (if(execute((car (first x)) state))
-        (execute ((car (second x)) state))
-        (execute ((car (third x)) state)))
+      (let ([a (execute(first x) state)])
+      (if(equal? a #t)
+        (execute (second x) state)
+        (execute (third x) state)))
       (error "everything is on fire in eval_if."))
     (error "everything is on fire in eval_if.")))
 
@@ -268,10 +274,25 @@
 ; rational ((lambda{first} (args) {second} ---body---- {rest or three}){car} {cdr})
 ;use getpairWithKey
 (define (eval_lambda x state)
-(if (and(and(pair? car(second(x))) (pair? car(third(x)))) (pair? cdr(x)))
-    ((lambda (execute(second(car(x))), state)  (execute(third(car(x)), state)))
-     (execute((cdr(x)) state)))
-(error "Justin's lambda function broke again. what an idiot.")))
+ 
+  (if (equal? 1 (length(second(car x)))) ; If length is one do simple version of the lambda algorithm
+      (let ([a (second(car x))] ; first param
+            [c (cadr x)]) ; car cdr  value of first param
+       ;add if lambda
+       (if (list? c)
+           ( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list (execute c state))) state)
+           ( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list c)) state)))
+      ;else this is the more complicated version
+      (let ;length 2 algorithm 
+          ([a (car(second(car x)))] ; first param
+           [b (car(cdr(second(car x))))] ; second param
+           [c (caadr x)] ;car car cdr  value of first param
+           [d (cadadr x)]) ;car cdr car cdr ; value of second param
+        (if(equal? (list (second(third(car x)))) c) ; if c is the first param, run 1, else run 2
+           (execute (append (list (first(third(car x)))) (list d) (list c)) state) ;1 
+           (execute (append (list (first(third(car x)))) (list c) (list d)) state))))) ;2
+           
+  ;( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list c)) state))
 
 (define (addToState vars state)
   (if (and (pair? vars) (not (null? vars)))
