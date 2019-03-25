@@ -290,38 +290,28 @@
          (_fact(execute (car x) state))
          (_fact x)))
          
-(define (eval_lambda2 x state)
-"ahh"
-      (let ;length 2 algorithm 
-          ([a (car(second(car x)))] ; first param
-           [b (cadr(second(car x)))] ; second param
-           [c (caadr x)] ;car car cdr  value of first param
-           [d (cadadr x)]) ;car cdr car cdr ; value of second param
-        (if(equal? (list (second(third(car x)))) c) ; if c is the first param, run 1, else run 2
-           (execute (append (list (first(third(car x)))) (list d) (list c)) state) ;1 
-           (execute (append (list (first(third(car x)))) (list c) (list d)) state)))
-  )
+
 ;Only implement the plain lambda syntax without support
 ;for keyword or optional arguments. Assume there is only one expression in the body.
 ; rational ((lambda{first} (args) {second} ---body---- {rest or three}){car} {cdr})
 ;use getpairWithKey
 (define (eval_lambda x state)
-  (if (equal? 1 (length(second(car x)))) ; If length is one do simple version of the lambda algorithm
+  (cond [(equal? 1 (length(second(car x)))) ; If length is one do simple version of the lambda algorithm
       (let ([a (second(car x))] ; first param
             [c (cadr x)]) ; car cdr  value of first param
        ;add if lambda
        (if (list? c)
            ( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list (execute c state))) state)
-           ( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list c)) state)))
+           ( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list c)) state)))]
       ;else this is the more complicated version
-      (let ;length 2 algorithm 
+      [(equal? 2 (length(second(car x)))) (let ;length 2 algorithm 
         ([a (car(second(car x)))] ; first param
            [b (car(cdr(second(car x))))] ; second param
            [c (cadr x)] ;car cdr  value of first param
            [d (caddr x)]) ;car cdr cdr ; value of second param
         (if(equal? (list (second(third(car x)))) c) ; if c is the first param, run 1, else run 2
            (execute (append (list (first(third(car x)))) (list d) (list c)) state) ;1 
-           (execute (append (list (first(third(car x)))) (list c) (list d)) state))))) ;2
+           (execute (append (list (first(third(car x)))) (list c) (list d)) state)))])) ;2
            
   ;( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list c)) state))
 
