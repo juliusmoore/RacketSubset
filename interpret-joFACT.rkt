@@ -269,7 +269,7 @@
         (execute (third x) state)))
       (error "everything is on fire in eval_if."))
     (error "everything is on fire in eval_if.")))
-
+;this function finds the factorial of parameter x
 (define (_fact  x)
   (if(pair? x)
      (let ([y (car x)])
@@ -284,13 +284,11 @@
                    (if (= y 0) 
                        1
                        (* y (_fact (- y 1)))))]) (xy y)))))
-
-(define (eval_fact x state)
-   (if (pair? (car x))
-         (_fact(execute x state))
-         (if (list? (car x))
-               (_fact(execute x state))
-               (_fact x))))
+;this 
+(define (eval_fact x state)    
+   (if (list?  (car x))
+         (_fact(execute (car x) state))
+         (_fact x)))
          
 (define (eval_lambda2 x state)
 "ahh"
@@ -317,10 +315,10 @@
            ( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list c)) state)))
       ;else this is the more complicated version
       (let ;length 2 algorithm 
-          ([a (car(second(car x)))] ; first param
-           [b (cadr(second(car x)))] ; second param
-           [c (caadr x)] ;car car cdr  value of first param
-           [d (cadadr x)]) ;car cdr car cdr ; value of second param
+        ([a (car(second(car x)))] ; first param
+           [b (car(cdr(second(car x))))] ; second param
+           [c (cadr x)] ;car cdr  value of first param
+           [d (caddr x)]) ;car cdr cdr ; value of second param
         (if(equal? (list (second(third(car x)))) c) ; if c is the first param, run 1, else run 2
            (execute (append (list (first(third(car x)))) (list d) (list c)) state) ;1 
            (execute (append (list (first(third(car x)))) (list c) (list d)) state))))) ;2
