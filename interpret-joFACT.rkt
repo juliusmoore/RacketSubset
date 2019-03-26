@@ -296,13 +296,18 @@
 ; rational ((lambda{first} (args) {second} ---body---- {rest or three}){car} {cdr})
 ;use getpairWithKey
 (define (eval_lambda x state)
-  (cond [(equal? 1 (length(second(car x)))) ; If length is one do simple version of the lambda algorithm
+  (cond [(or (not(list? (second(car x)))) (equal? 1 (length(second(car x))))) ; If length is one do simple version of the lambda algorithm
       (let ([a (second(car x))] ; first param
             [c (cadr x)]) ; car cdr  value of first param
        ;add if lambda
-       (if (list? c)
-           ( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list (execute c state))) state)
-           ( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list c)) state)))]
+       (if (list? c)         
+           (execute (third(car x)) state)
+           (if (or (equal? a (second(third(car x)))) (equal? a (third(third(car x))) ))
+               (if (equal? a (second(third(car x))))
+                   ( execute (append (list (first(third(car x)))) (list (execute c state)) (list (third(third(car x))))) state)
+                   ( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list (execute c state))) state))
+               
+               (execute (third(car x)) state)) ))]
       ;else this is the more complicated version
       [(equal? 2 (length(second(car x)))) (let ;length 2 algorithm 
         ([a (car(second(car x)))] ; first param
