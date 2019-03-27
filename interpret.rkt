@@ -2,23 +2,30 @@
 
 (define (startEval rkt) (execute rkt '(())))
 
+;I broke this: (eval_lambda_new '(lambda (x) x) '(1) '(()))
 (define (getPairWithKey key state)
   (if (pair? state)
       (if (null? state)
-          (error key "is undefined")
+          (error key "is undefined" state)
           (let ([candidate (car state)])
             (if (pair? candidate)
                 (if (equal? (car candidate) key)
                     (cdr candidate)
                     (getPairWithKey key (cdr state)))
-                (error "The state has been corrupted by an unparist"))))
-      (error "The state is not a pair!"))
+                (error "The state has been corrupted by an unparist" state))))
+      (error "The state is not a pair!" state))
   )
 
+;Create a bug! Pass in an empty list in defi that was generated instead of being a real argument. We will then execute defi 
 (define (execute_var func defi state)
- (if (pair? func)
+  (print (list "state : " state))
+  (if (pair? func)
      (error "THis is not a variable : " func " in state : " state)
-     (execute (cons getPairWithKey(func state) '(defi)) state)))
+     (if (pair? defi)
+     (if (null? defi)
+         (execute (getPairWithKey func state) state)
+         (execute (cons (getPairWithKey func state) defi) state))
+     (execute (list (getPairWithKey func state) defi) state))))
 
 (define (execute rkt state)
   (if (pair? rkt)
@@ -272,6 +279,37 @@
     (error "everything is on fire in eval_if.")))
 
 
+(define (eval_lambda lamb args state)
+  (eval_lambda_old lamb args state)
+  )
+
+;bug in design:
+; I have chosen not to deal with this format (lambda x x) (only deal with arguments as list (lambda (x) x) ...)
+;we could receive:
+; 0 to infinity arguments to the lambda
+; 0 to infinity parameters given to the lambda
+;we can result in:
+;a partially evaluated lambda
+;no action (nothing to evaluate) (no parameters to evaluate the lambda on)
+;a fully evaluated lambda that is executed (#arguments = #parameters)
+;a fully evaluated lambda that is executed, then dumped into a longer list (more parameters given than there are arguments in the lambda)
+(define (eval_lambda_new lamb param state)
+  (let ([arg (cadr lamb)][body (cddr lamb)])
+    (if (null? arg)
+        (if (null? param)
+            (execute body state) ; simple lambda
+            (execute (cons (execute body state) param) state)) ; lambda may have returned a lambda, can keep trying
+        (if (null? param)
+            lamb ;(error "We would like to return a partially evaluated lambda, but to do that you cannot execute us! partial : " lamb " state: " state); sadly racket requires we crash here (argument mismatch)
+            (let ([keyValueList (cons (car arg) (cons (car param) '()))] [leftoverArg (cdr arg)] [leftoverParam (cdr param)])
+              (eval_lambda_new (cons 'lambda (cons leftoverArg
+                                                     (list 'let (cons keyValueList '()) body)
+                                                   )) leftoverParam state)
+              )))
+    )
+  )
+                     
+
 ;(define (eval_find_Replace))
 ;Only implement the plain lambda syntax without support
 ;for keyword or optional arguments. Assume there is only one expression in the body.
@@ -279,7 +317,7 @@
 ;use getpairWithKey
 ;()' (x)' (x .... n) <-args
 ; state 
-(define (eval_lambda funct args state)
+(define (eval_lambda_old funct args state)
   (if(list? (second (car funct))) ;if params are list
   (cond [(or (not(list? (second(car funct)))) (equal? 1 (length(second(car funct))))) ; If length is one do simple version of the lambda algorithm
       (let ([a (car(second(car funct)))] ; first param
