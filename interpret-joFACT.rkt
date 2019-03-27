@@ -296,6 +296,8 @@
 ;for keyword or optional arguments. Assume there is only one expression in the body.
 ; rational ((lambda{first} (args) {second} ---body---- {rest or three}){car} {cdr})
 ;use getpairWithKey
+;()' (x)' (x .... n) <-args
+; state 
 (define (eval_lambda funct args state)
   (if(list? (second (car x))) ;if params are list
   (cond [(or (not(list? (second(car x)))) (equal? 1 (length(second(car x))))) ; If length is one do simple version of the lambda algorithm
