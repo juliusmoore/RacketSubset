@@ -43,7 +43,7 @@
                   [(equal? func '/) (eval_div defi state)]
                   [(equal? func '<) (eval_LT defi state)]
                   [(equal? func '<=) (eval_LTE defi state)]
-[(equal? func 'equal?) (eval_equal defi state)]
+                  [(equal? func 'equal?) (eval_equal defi state)]
                   [(equal? func '=) (eval_eq defi state)]
                   [(equal? func '>) (eval_GT defi state)]
                   [(equal? func '>=) (eval_GTE defi state)]
@@ -77,13 +77,23 @@
 (define (eval_add x state)
     (if (null? x)
      (error "input is null for eval_add")
-     (if (pair? (car x))
-         (if(pair? (car(cdr x)))
-            (+ (execute(car x) state) (execute(car(cdr x)) state))
-            (+ (execute(car x) state) (car(cdr x))))
-         (if(pair? (car(cdr x)))
-            (+ (car x) (execute(car(cdr x)) state))
-            (+ (car x) (car(cdr x)))))))
+     (if (or (number? (car x)) (number? (car (cdr x))))
+         (if (pair? (car x))
+             (if(pair? (car(cdr x)))
+                (+ (execute(car x) state) (execute(car(cdr x)) state)) ;if rhs and lhs are pairs execute is called
+                (+ (execute(car x) state) (car(cdr x)))) ;if rhs is a pair but lhs is not execute is called for rhs.
+             (if(pair? (car(cdr x)))
+                (+ (car x) (execute(car(cdr x)) state)) ;if  rhs is not a pair but lhs is a pair execute is called for lhs
+                (+ (car x) (car(cdr x))))) ; if neither rhs or lhs are pairs then execute is not called.
+         ; option one (error x " does not contain a number.")
+         (if (pair? (car state)) ; option 2
+             (if (pair? (car (cdr state)))
+                 ;checks to see if there are values in the state.
+                 ;if there are values in the first sublist and second sublist in state.
+                 ;then we treate the first value as lhs and second as rhs.
+                 (+   (cdr (car state)) (cdr (car (cdr state))))
+                 (error "error in the eval_add function value of x:" x " the value of state:" state))
+             (error "error in the eval_add function value of x:" x " the value of state:" state)))))
 
 ;this function subtracts  two values 
 (define (eval_sub x state)
@@ -313,40 +323,7 @@
   )
                      
 
-;(define (eval_find_Replace))
-;Only implement the plain lambda syntax without support
-;for keyword or optional arguments. Assume there is only one expression in the body.
-; rational ((lambda{first} (args) {second} ---body---- {rest or three}){car} {cdr})
-;use getpairWithKey
-;()' (x)' (x .... n) <-args
-; state 
-(define (eval_lambda_old funct args state)
-  (if(list? (second (car funct))) ;if params are list
-  (cond [(or (not(list? (second(car funct)))) (equal? 1 (length(second(car funct))))) ; If length is one do simple version of the lambda algorithm
-      (let ([a (car(second(car funct)))] ; first param
-            [c (cadr funct)]) ; car cdr  value of first param
-       ;add if lambda
-       (if (list? c)         
-           (execute (third(car funct)) state)
-          (if (list? (third(car funct)))
-           (if  (equal? a (second(third(car funct))))
-                (if (equal? 2 (length(third(car funct))))
-                   ( execute (append (list (first(third(car funct)))) (list (execute c state))) state) 
-                   ( execute (append (list (first(third(car funct)))) (list (execute c state)) (list (third(third(car funct))))) state))
-                   ( execute (append (list (first(third(car funct)))) (list (second(third(car funct)))) (list (execute c state))) state))
-           c)))]
-      ;else this is the more complicated version
-      [(equal? 2 (length(second(car funct)))) (let ;length 2 algorithm 
-        ([a (car(second(car funct)))] ; first param
-           [b (car(cdr(second(car funct))))] ; second param
-           [c (cadr funct)] ;car cdr  value of first param
-           [d (caddr funct)]) ;car cdr cdr ; value of second param
-           (if (list? c)         
-           (execute (third(car funct)) state)
-           (if  (equal? a (second(third(car funct))))  
-                (execute (append (list (first(third(car funct)))) (list (execute c state)) (list (execute d state))) state)
-                (execute (append (list (first(third(car funct)))) (list (execute d state))) (list (execute c state)) state))))])
-(error "No parameters for lambda function")))
+
 
 ;Append all the key value pairs in a list into the state ( (x . 3) (y . 5) ) -> state
 (define (addToState vars state)
