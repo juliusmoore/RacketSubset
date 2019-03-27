@@ -269,6 +269,7 @@
         (execute (third x) state)))
       (error "everything is on fire in eval_if."))
     (error "everything is on fire in eval_if.")))
+
 ;this function finds the factorial of parameter x
 (define (_fact  x)
   (if(pair? x)
@@ -290,33 +291,39 @@
          (_fact(execute (car x) state))
          (_fact x)))
          
-
+;(define (eval_find_Replace))
 ;Only implement the plain lambda syntax without support
 ;for keyword or optional arguments. Assume there is only one expression in the body.
 ; rational ((lambda{first} (args) {second} ---body---- {rest or three}){car} {cdr})
 ;use getpairWithKey
-(define (eval_lambda x state)
+(define (eval_lambda funct args state)
+  (if(list? (second (car x))) ;if params are list
   (cond [(or (not(list? (second(car x)))) (equal? 1 (length(second(car x))))) ; If length is one do simple version of the lambda algorithm
-      (let ([a (second(car x))] ; first param
+      (let ([a (car(second(car x)))] ; first param
             [c (cadr x)]) ; car cdr  value of first param
        ;add if lambda
        (if (list? c)         
            (execute (third(car x)) state)
-           (if (or (equal? a (second(third(car x)))) (equal? a (third(third(car x))) ))
-               (if (equal? a (second(third(car x))))
-                   ( execute (append (list (first(third(car x)))) (list (execute c state)) (list (third(third(car x))))) state)
+          (if (list? (third(car x)))
+           (if  (equal? a (second(third(car x))))
+                (if (equal? 2 (length(third(car x))))
+                   ( execute (append (list (first(third(car x)))) (list (execute c state))) state) 
+                   ( execute (append (list (first(third(car x)))) (list (execute c state)) (list (third(third(car x))))) state))
                    ( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list (execute c state))) state))
-               
-               (execute (third(car x)) state)) ))]
+           c)))]
       ;else this is the more complicated version
       [(equal? 2 (length(second(car x)))) (let ;length 2 algorithm 
         ([a (car(second(car x)))] ; first param
            [b (car(cdr(second(car x))))] ; second param
            [c (cadr x)] ;car cdr  value of first param
            [d (caddr x)]) ;car cdr cdr ; value of second param
-        (if(equal? (list (second(third(car x)))) c) ; if c is the first param, run 1, else run 2
-           (execute (append (list (first(third(car x)))) (list d) (list c)) state) ;1 
-           (execute (append (list (first(third(car x)))) (list c) (list d)) state)))])) ;2
+           (if (list? c)         
+           (execute (third(car x)) state)
+           (if  (equal? a (second(third(car x))))  
+                (execute (append (list (first(third(car x)))) (list (execute c state)) (list (execute d state))) state)
+                (execute (append (list (first(third(car x)))) (list (execute d state))) (list (execute c state)) state))))])
+(error "No parameters for lambda function")))
+
            
   ;( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list c)) state))
 
