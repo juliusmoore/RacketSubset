@@ -26,7 +26,9 @@
           '()
           (let ([func (car rkt)] [defi (cdr rkt)])
             (if (pair? func)
-                (eval_lambda rkt state)
+                (if (equal? (car func) 'lambda)
+                    (eval_lambda func defi state)
+                    (error "Goats don't go baaah : We have not found a lambda in " rkt " state : " state))
                 (cond
                   [(equal? func '+) (eval_add defi state)]
                   [(equal? func '-) (eval_sub defi state)]
@@ -47,6 +49,7 @@
                   [(equal? func 'let) (eval_let defi state)]
                   [(equal? func 'letrec) (eval_letrec defi state)]
                   [(equal? func 'quote) (eval_quote defi state)] ;quotes
+                  [(equal? func 'lambda) (eval_lambda rkt '() state)]
                   [else (execute_var func defi state)])
                 )))
       (if (number? rkt)
@@ -269,31 +272,42 @@
     (error "everything is on fire in eval_if.")))
 
 
+;(define (eval_find_Replace))
 ;Only implement the plain lambda syntax without support
 ;for keyword or optional arguments. Assume there is only one expression in the body.
 ; rational ((lambda{first} (args) {second} ---body---- {rest or three}){car} {cdr})
 ;use getpairWithKey
-(define (eval_lambda x state)
- 
-  (if (equal? 1 (length(second(car x)))) ; If length is one do simple version of the lambda algorithm
-      (let ([a (second(car x))] ; first param
-            [c (cadr x)]) ; car cdr  value of first param
+;()' (x)' (x .... n) <-args
+; state 
+(define (eval_lambda funct args state)
+  (if(list? (second (car funct))) ;if params are list
+  (cond [(or (not(list? (second(car funct)))) (equal? 1 (length(second(car funct))))) ; If length is one do simple version of the lambda algorithm
+      (let ([a (car(second(car funct)))] ; first param
+            [c (cadr funct)]) ; car cdr  value of first param
        ;add if lambda
-       (if (list? c)
-           ( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list (execute c state))) state)
-           ( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list c)) state)))
+       (if (list? c)         
+           (execute (third(car funct)) state)
+          (if (list? (third(car funct)))
+           (if  (equal? a (second(third(car funct))))
+                (if (equal? 2 (length(third(car funct))))
+                   ( execute (append (list (first(third(car funct)))) (list (execute c state))) state) 
+                   ( execute (append (list (first(third(car funct)))) (list (execute c state)) (list (third(third(car funct))))) state))
+                   ( execute (append (list (first(third(car funct)))) (list (second(third(car funct)))) (list (execute c state))) state))
+           c)))]
       ;else this is the more complicated version
-      (let ;length 2 algorithm 
-          ([a (car(second(car x)))] ; first param
-           [b (car(cdr(second(car x))))] ; second param
-           [c (caadr x)] ;car car cdr  value of first param
-           [d (cadadr x)]) ;car cdr car cdr ; value of second param
-        (if(equal? (list (second(third(car x)))) c) ; if c is the first param, run 1, else run 2
-           (execute (append (list (first(third(car x)))) (list d) (list c)) state) ;1 
-           (execute (append (list (first(third(car x)))) (list c) (list d)) state))))) ;2
-           
-  ;( execute (append (list (first(third(car x)))) (list (second(third(car x)))) (list c)) state))
+      [(equal? 2 (length(second(car funct)))) (let ;length 2 algorithm 
+        ([a (car(second(car funct)))] ; first param
+           [b (car(cdr(second(car funct))))] ; second param
+           [c (cadr funct)] ;car cdr  value of first param
+           [d (caddr funct)]) ;car cdr cdr ; value of second param
+           (if (list? c)         
+           (execute (third(car funct)) state)
+           (if  (equal? a (second(third(car funct))))  
+                (execute (append (list (first(third(car funct)))) (list (execute c state)) (list (execute d state))) state)
+                (execute (append (list (first(third(car funct)))) (list (execute d state))) (list (execute c state)) state))))])
+(error "No parameters for lambda function")))
 
+;Append all the key value pairs in a list into the state ( (x . 3) (y . 5) ) -> state
 (define (addToState vars state)
   (if (and (pair? vars) (not (null? vars)))
       (let ([addition (car vars)] [rest (cdr vars)])
@@ -302,11 +316,21 @@
                (cons addition ((addToState rest state)))))
       (error "You have caused a calamity: addToState on " vars " state : " state)))
 
+;Perform the process of creating a (name . value) pair where value has been evaluated to the extent possible.
+;Arguments:
+; p : the (name . value) pair whose value should be evaluated
+; state : the current state of the stack
+; Returns : 
 (define (produceExecutedPair p state)
   (if (and (pair? p) (not (null? p)))
   (cons (car p) (execute (car (cdr p)) state))
   (error "You have caused a calamity: produceExecutedPair on " p " state : " state)))
 
+;Evaluate the values in a list of (name . value) pairs and store the evaluations with their names as a state
+;Arguments:
+; vars : the list of name-value pairs to have their values evalutated
+; state : the state of the stack to append to
+;Returns: A state/stack with the name-value pairs added to the front/top
 (define (evalToState vars state)
   (if (and (pair? vars) (not (null? vars)))
       (let ([addition (produceExecutedPair (car vars) state)] [rest (cdr vars)])
@@ -316,12 +340,21 @@
       (error "You have caused a calamity: evalToState on " vars "state : " state)))
 
  ;evaluate then store
+;Performs the let function
+;Arguments:
+; x : the list of arguments to the function
+; state : the curret state of the stack
+;Returns : Follows the path of the Racket.
 (define (eval_let x state)
   (if (and (pair? x) (equal? (length x) 2))
       (execute (car (cdr x)) (evalToState (car x) state)) 
       (error "You have caused a calamity: let on " x " state : " state)))
 
  ;store then evaluate
+;Performs the letrec function of racket.
+;Arguments:
+; x : the list of arguments to the function
+; state : the curret state of the stack
 (define (eval_letrec x state)
   (if (and (pair? x) (equal? (length x) 2))
       (execute (car (cdr x)) (addToState (car x) state))
