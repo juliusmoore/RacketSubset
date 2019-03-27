@@ -1,8 +1,8 @@
 #lang racket
 
-(define (startEval rkt) (execute rkt '(())))
+(define (startEval rkt) (execute rkt '()))
 
-;I broke this: (eval_lambda_new '(lambda (x) x) '(1) '(()))
+
 (define (getPairWithKey key state)
   (if (pair? state)
       (if (null? state)
@@ -13,19 +13,19 @@
                     (cdr candidate)
                     (getPairWithKey key (cdr state)))
                 (error "The state has been corrupted by an unparist" state))))
-      (error "The state is not a pair!" state))
+      (error key " is undefined in " state))
   )
 
 ;Create a bug! Pass in an empty list in defi that was generated instead of being a real argument. We will then execute defi 
-(define (execute_var func defi state)
-  (print (list "state : " state))
-  (if (pair? func)
-     (error "THis is not a variable : " func " in state : " state)
-     (if (pair? defi)
-     (if (null? defi)
-         (execute (getPairWithKey func state) state)
-         (execute (cons (getPairWithKey func state) defi) state))
-     (execute (list (getPairWithKey func state) defi) state))))
+;(define (execute_var func defi state)
+;  (print (list "state : " state))
+ ; (if (pair? func)
+;     (error "THis is not a variable : " func " in state : " state)
+ ;    (if (pair? defi)
+;     (if (null? defi)
+  ;       (execute (getPairWithKey func state) state)
+ ;        (execute (cons (getPairWithKey func state) defi) state))
+;     (execute (list (getPairWithKey func state) defi) state))))
 
 (define (execute rkt state)
   (if (pair? rkt)
@@ -57,17 +57,20 @@
                   [(equal? func 'letrec) (eval_letrec defi state)]
                   [(equal? func 'quote) (eval_quote defi state)] ;quotes
                   [(equal? func 'lambda) (eval_lambda rkt '() state)]
-                  [else (execute_var func defi state)])
+                  [else
+                   (execute (cons (getPairWithKey func state) defi) state)
+                   ])
                 )))
       (if (number? rkt)
           rkt ;only if its a literal, or a representation of a literal, is this "ok"
           (let ([val (getPairWithKey rkt state)])
             (if (number? val)
                 val
-                (error "You Fucked Up: Attempted to use " rkt " defined using a list as a literal. state : " state))
+                (execute val state) ; chain of variables? -> will catch error in next getPairWithKey
             )
           )
       )
+  )
   )
 
 ;this function adds two values 
@@ -280,7 +283,7 @@
 
 
 (define (eval_lambda lamb args state)
-  (eval_lambda_old lamb args state)
+  (eval_lambda_new lamb args state)
   )
 
 ;bug in design:
@@ -294,7 +297,7 @@
 ;a fully evaluated lambda that is executed (#arguments = #parameters)
 ;a fully evaluated lambda that is executed, then dumped into a longer list (more parameters given than there are arguments in the lambda)
 (define (eval_lambda_new lamb param state)
-  (let ([arg (cadr lamb)][body (cddr lamb)])
+  (let ([arg (cadr lamb)][body (caddr lamb)])
     (if (null? arg)
         (if (null? param)
             (execute body state) ; simple lambda
@@ -303,7 +306,7 @@
             lamb ;(error "We would like to return a partially evaluated lambda, but to do that you cannot execute us! partial : " lamb " state: " state); sadly racket requires we crash here (argument mismatch)
             (let ([keyValueList (cons (car arg) (cons (car param) '()))] [leftoverArg (cdr arg)] [leftoverParam (cdr param)])
               (eval_lambda_new (cons 'lambda (cons leftoverArg
-                                                     (list 'let (cons keyValueList '()) body)
+                                                     (cons (list 'let (cons keyValueList '()) body) '())
                                                    )) leftoverParam state)
               )))
     )
