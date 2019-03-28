@@ -75,25 +75,42 @@
 
 ;this function adds two values 
 (define (eval_add x state)
-    (if (null? x)
-     (error "input is null for eval_add")
-     (if (or (number? (car x)) (number? (car (cdr x))))
-         (if (pair? (car x))
-             (if(pair? (car(cdr x)))
-                (+ (execute(car x) state) (execute(car(cdr x)) state)) ;if rhs and lhs are pairs execute is called
-                (+ (execute(car x) state) (car(cdr x)))) ;if rhs is a pair but lhs is not execute is called for rhs.
-             (if(pair? (car(cdr x)))
-                (+ (car x) (execute(car(cdr x)) state)) ;if  rhs is not a pair but lhs is a pair execute is called for lhs
-                (+ (car x) (car(cdr x))))) ; if neither rhs or lhs are pairs then execute is not called.
-         ; option one (error x " does not contain a number.")
-         (if (pair? (car state)) ; option 2
-             (if (pair? (car (cdr state)))
-                 ;checks to see if there are values in the state.
-                 ;if there are values in the first sublist and second sublist in state.
-                 ;then we treate the first value as lhs and second as rhs.
-                 (+   (cdr (car state)) (cdr (car (cdr state))))
-                 (error "error in the eval_add function value of x:" x " the value of state:" state))
-             (error "error in the eval_add function value of x:" x " the value of state:" state)))))
+  (if (null? x)
+       ;option 4 is to replace the body of (if (null? x)) with these 3 lines, and fix getPairWithKey.
+              ; (if (pair?  x) ; line 1
+              ;    (+ (execute(car x) state) (execute(car(cdr x)) state)) ; line 2
+              ;   (raise-arguments-error 'eval_add "not a pair" "first parameter" x );line 3
+      (error "input is null for eval_add")
+      (if (or (number? (car x)) (number? (car (cdr x))))
+          (if (pair? (car x))
+             
+             
+              (if(pair? (car(cdr x)))
+                 (+ (execute(car x) state) (execute(car(cdr x)) state)) ;if rhs and lhs are pairs execute is called
+                 (+ (execute(car x) state) (car(cdr x)))) ;if rhs is a pair but lhs is not execute is called for rhs.
+              (if(pair? (car(cdr x)))
+                 (+ (car x) (execute(car(cdr x)) state)) ;if  rhs is not a pair but lhs is a pair execute is called for lhs
+                 (+ (car x) (car(cdr x))))) ; if neither rhs or lhs are pairs then execute is not called.
+          ; option 1 (error x " does not contain a number.")
+          ; option 2
+          (if (pair? (car state))
+              (if (pair? (car (cdr state)))
+                  ;checks to see if there are values in the state.
+                  ;if there are values in the first sublist and second sublist in state.
+                  ;then we treate the first value as lhs and second as rhs.
+                  (if(not(equal? (caar state) (car (car(cdr state)))))
+                     (+   (cdr (car state)) (cdr (car (cdr state))))
+                     (raise-arguments-error 'eval_add
+                                            "Variables in state are the same."
+                                            "first"(car (car(cdr state)))
+                                            "second" (car (car(cdr state)))
+                                            "full state" state))
+                  (error "error in the eval_add function value of x:" x " the value of state:" state))
+              (error "error in the eval_add function value of x:" x " the value of state:" state)))  ))
+
+         ; option 3
+         ;(+ (getPairWithKey rkt state))
+       
 
 ;this function subtracts  two values 
 (define (eval_sub x state)
