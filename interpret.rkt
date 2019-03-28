@@ -2,32 +2,29 @@
 
 (define (startEval rkt) (execute rkt '()))
 
-
-(define (toString x) 
-  (with-output-to-string (lambda () (write x)))
-  )
-
+;(define (getPairWithKey key state)
+;  (if (pair? state)
+ ;     (if (null? state)
+  ;        (error key "is undefined")
+ ;         (let ([candidate (car state)])
+ ;           (if (pair? candidate)
+;                (if (equal? (car candidate) key)
+;                    (cdr candidate)
+;                    (getPairWithKey key (cdr state)))
+;                (error "The state has been corrupted by an unparist"))))
+;      (error "The state is not a pair!"))
+ ; )
 
 (define (getPairWithKey key state)
-  (let ([ans (getPairWithKey_core key state)])
-    (if (string? ans)
-        (error "Big Picture: " key " state: " state " Local Picture : " ans)
-        ans)
-    )
-)
-
-(define (getPairWithKey_core key state)
   (if (pair? state)
       (if (null? state)
-          (toString (list key "is undefined" state))
-          (let ([candidate (car state)])
-            (if (pair? candidate)
-                (if (equal? (car candidate) key)
-                    (cdr candidate)
-                    (getPairWithKey key (cdr state)))
-               (toString (list "The state has been corrupted by an unparist" state)))))
-      (toString(list key " is undefined in " state)))
-  )
+          (error key "is undefined")
+          (let ([candidate (car state)] [continuation (cdr state)])
+            (if (equal? (car candidate) key)
+                (cdr candidate); we are storing pure pairs not lists
+                (getPairWithKey key continuation))))
+      (error "The state cannot be a literal: " state)))
+
 
 ;Create a bug! Pass in an empty list in defi that was generated instead of being a real argument. We will then execute defi 
 ;(define (execute_var func defi state)
