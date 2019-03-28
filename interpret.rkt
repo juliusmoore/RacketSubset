@@ -75,150 +75,87 @@
 
 ;this function adds two values 
 (define (eval_add x state)
-  (if (null? x)
-       ;option 4 is to replace the body of (if (null? x)) with these 3 lines, and fix getPairWithKey.
-              ; (if (pair?  x) ; line 1
-              ;    (+ (execute(car x) state) (execute(car(cdr x)) state)) ; line 2
-              ;   (raise-arguments-error 'eval_add "not a pair" "first parameter" x );line 3
-      (error "input is null for eval_add")
-      (if (or (number? (car x)) (number? (car (cdr x))))
-          (if (pair? (car x))
-             
-             
-              (if(pair? (car(cdr x)))
-                 (+ (execute(car x) state) (execute(car(cdr x)) state)) ;if rhs and lhs are pairs execute is called
-                 (+ (execute(car x) state) (car(cdr x)))) ;if rhs is a pair but lhs is not execute is called for rhs.
-              (if(pair? (car(cdr x)))
-                 (+ (car x) (execute(car(cdr x)) state)) ;if  rhs is not a pair but lhs is a pair execute is called for lhs
-                 (+ (car x) (car(cdr x))))) ; if neither rhs or lhs are pairs then execute is not called.
-          ; option 1 (error x " does not contain a number.")
-          ; option 2
-          (if (pair? (car state))
-              (if (pair? (car (cdr state)))
-                  ;checks to see if there are values in the state.
-                  ;if there are values in the first sublist and second sublist in state.
-                  ;then we treate the first value as lhs and second as rhs.
-                  (if(not(equal? (caar state) (car (car(cdr state)))))
-                     (+   (cdr (car state)) (cdr (car (cdr state))))
-                     (raise-arguments-error 'eval_add
-                                            "Variables in state are the same."
-                                            "first"(car (car(cdr state)))
-                                            "second" (car (car(cdr state)))
-                                            "full state" state))
-                  (error "error in the eval_add function value of x:" x " the value of state:" state))
-              (error "error in the eval_add function value of x:" x " the value of state:" state)))  ))
-
-         ; option 3
-         ;(+ (getPairWithKey rkt state))
+  (if (not (null? x))
+       ;must fix getPairWithKey.
+       (if (pair?  x) ; line 1
+           (+ (execute(car x) state) (execute(car(cdr x)) state)) ; line 2
+           (raise-arguments-error 'eval_add "not a pair" "first parameter" x ))
+       (raise-arguments-error 'eval_add "not not null" "first parameter" x)));line 3
+ 
        
 
 ;this function subtracts  two values 
 (define (eval_sub x state)
-    (if (null? x)
-     (error "input is null for eval_sub")
-     (if (pair? (car x))
-         (if(pair? (car(cdr x)))
-            (- (execute(car x) state) (execute(car(cdr x)) state))
-            (- (execute(car x) state) (car(cdr x))))
-         (if(pair? (car(cdr x)))
-            (- (car x) (execute(car(cdr x)) state))
-            (- (car x) (car(cdr x)))))))
+      (if (not (null? x))
+       ;must fix getPairWithKey.
+        (if (pair?  x) ; line 1
+            (- (execute(car x) state) (execute(car(cdr x)) state)) ; line 2
+            (raise-arguments-error 'eval_sub "not a pair" "first parameter" x ))
+        (raise-arguments-error 'eval_sub "not not null" "first parameter" x)));line 3
 
 ;this function multiply  two values 
 (define (eval_mult x state)
-    (if (null? x)
-     (error "input is null for eval_mult")
-     (if (pair? (car x))
-         (if(pair? (car(cdr x)))
-            (* (execute(car x) state) (execute(car(cdr x)) state))
-            (* (execute(car x) state) (car(cdr x))))
-         (if(pair? (car(cdr x)))
-            (* (car x) (execute(car(cdr x)) state))
-            (* (car x) (car(cdr x)))))))
+    (if (not(null? x))
+      (if (pair?  x) ; line 1
+          (* (execute(car x) state) (execute(car(cdr x)) state)) ; line 2
+          (raise-arguments-error 'eval_mult "not a pair" "first parameter" x ))
+      (raise-arguments-error 'eval_mult "not not null" "first parameter" x)));line 3
 
 ;this function divides two values 
 (define (eval_div x state)
-    (if (null? x)
-     (error "input is null for eval_div")
-     (if (pair? (car x))
-         (if(pair? (car(cdr x)))
-            (/ (execute(car x) state) (execute(car(cdr x)) state))
-            (/ (execute(car x) state) (car(cdr x))))
-         (if(pair? (car(cdr x)))
-            (/ (car x) (execute(car(cdr x)) state))
-            (/ (car x) (car(cdr x)))))))
+   (if (not(null? x))
+     (if (pair?  x) ; line 1
+         (/ (execute(car x) state) (execute(car(cdr x)) state)) ; line 2
+         (raise-arguments-error 'eval_div "not pair" "first parameter" x ))
+     (raise-arguments-error 'eval_div "not not null" "first parameter" x)));line 3
 
 ;this function checks to see if two values are equal, but with equal?.
 (define (eval_equal x state)
-    (if (null? x)
-     (error "input is null for eval_equal")
-     (if (pair? (car x))
-         (if(pair? (car(cdr x)))
-            (equal? (execute(car x) state) (execute(car(cdr x)) state))
-            (equal? (execute(car x) state) (car(cdr x))))
-         (if(pair? (car(cdr x)))
-            (equal? (car x) (execute(car(cdr x)) state))
-            (equal? (car x) (car(cdr x)))))))
+   (if (not(null? x))
+     (if (pair?  x) ; line 1
+         (equal? (execute(car x) state) (execute(car(cdr x)) state)) ; line 2
+         (raise-arguments-error 'eval_div "not pair" "first parameter" x ))
+     (raise-arguments-error 'eval_div "not not null" "first parameter" x)));line 3
 
 ;this function checks to see if two values are equal, but with =.
 (define (eval_eq x state)
-    (if (null? x)
-     (error "input is null for eval_eq")
-     (if (pair? (car x))
-         (if(pair? (car(cdr x)))
-            (= (execute(car x) state) (execute(car(cdr x)) state))
-            (= (execute(car x) state) (car(cdr x))))
-         (if(pair? (car(cdr x)))
-            (= (car x) (execute(car(cdr x)) state))
-            (= (car x) (car(cdr x)))))))
+   (if (not(null? x))
+     (if (pair?  x) ; line 1
+         (= (execute(car x) state) (execute(car(cdr x)) state)) ; line 2
+         (raise-arguments-error 'eval_div "not pair" "first parameter" x ))
+     (raise-arguments-error 'eval_div "not not null" "first parameter" x)));line 3
 
 ; this function checks to see if left is less then or equal to right.
 (define (eval_LTE x state)
-    (if (null? x)
-     (error "input is null for eval_LTE")
-     (if (pair? (car x))
-         (if(pair? (car(cdr x)))
-            (<= (execute(car x) state) (execute(car(cdr x)) state))
-            (<= (execute(car x) state) (car(cdr x))))
-         (if(pair? (car(cdr x)))
-            (<= (car x) (execute(car(cdr x)) state))
-            (<= (car x) (car(cdr x)))))))
+   (if (not(null? x))
+     (if (pair?  x) ; line 1
+         (<= (execute(car x) state) (execute(car(cdr x)) state)) ; line 2
+         (raise-arguments-error 'eval_div "not pair" "first parameter" x ))
+     (raise-arguments-error 'eval_div "not not null" "first parameter" x)));line 3
 
 ; this function checks to see if left is less then to right.
 (define (eval_LT x state)
-    (if (null? x)
-     (error "input is null for eval_LT")
-     (if (pair? (car x))
-         (if(pair? (car(cdr x)))
-            (< (execute(car x) state) (execute(car(cdr x)) state))
-            (< (execute(car x) state) (car(cdr x))))
-         (if(pair? (car(cdr x)))
-            (< (car x) (execute(car(cdr x)) state))
-            (< (car x) (car(cdr x)))))))
+   (if (not(null? x))
+     (if (pair?  x) ; line 1
+         (< (execute(car x) state) (execute(car(cdr x)) state)) ; line 2
+         (raise-arguments-error 'eval_div "not pair" "first parameter" x ))
+     (raise-arguments-error 'eval_div "not not null" "first parameter" x)));line 3
 
 ;This function checks to see if left is greater then or equal to right.
 (define (eval_GTE x  state)
-    (if (null? x)
-     (error "input is null for eval_GTE")
-     (if (pair? (car x))
-         (if(pair? (car(cdr x)))
-            (>= (execute(car x) state) (execute(car(cdr x)) state))
-            (>= (execute(car x) state) (car(cdr x))))
-         (if(pair? (car(cdr x)))
-            (>= (car x) (execute(car(cdr x)) state))
-            (>= (car x) (car(cdr x)))))))
+    (if (not(null? x))
+     (if (pair?  x) ; line 1
+         (>= (execute(car x) state) (execute(car(cdr x)) state)) ; line 2
+         (raise-arguments-error 'eval_div "not pair" "first parameter" x ))
+     (raise-arguments-error 'eval_div "not not null" "first parameter" x)));line 3
 
 ;This function checks to see if left is greater then to right.
 (define (eval_GT x  state)
-    (if (null? x)
-     (error "input is null for eval_GT")
-     (if (pair? (car x))
-         (if(pair? (car(cdr x)))
-            (> (execute(car x) state) (execute(car(cdr x)) state))
-            (> (execute(car x) state) (car(cdr x))))
-         (if(pair? (car(cdr x)))
-            (> (car x) (execute(car(cdr x)) state))
-            (> (car x) (car(cdr x)))))))
+   (if (not(null? x))
+     (if (pair?  x) ; line 1
+         (> (execute(car x) state) (execute(car(cdr x)) state)) ; line 2
+         (raise-arguments-error 'eval_div "not pair" "first parameter" x ))
+     (raise-arguments-error 'eval_div "not not null" "first parameter" x)));line 3
 
 ;function outputs first value of a list.
 (define (eval_car x state)
