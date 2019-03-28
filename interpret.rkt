@@ -16,14 +16,14 @@
  ; )
 
 (define (getPairWithKey key state)
-  (if (pair? state)
-      (if (null? state)
-          (error key "is undefined")
+  (if (null? state)
+      (error key "is undefined")
+      (if (pair? state)
           (let ([candidate (car state)] [continuation (cdr state)])
             (if (equal? (car candidate) key)
                 (cdr candidate); we are storing pure pairs not lists
-                (getPairWithKey key continuation))))
-      (error "The state cannot be a literal: " state)))
+                (getPairWithKey key continuation)))
+      (error "The state cannot be a literal: " state))))
 
 
 ;Create a bug! Pass in an empty list in defi that was generated instead of being a real argument. We will then execute defi 
