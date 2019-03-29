@@ -4,6 +4,8 @@
 
 
 (define (getPairWithKey key state)
+  (write key)
+  (write state)
   (if (pair? state)
       (if (null? state)
           (error key "is undefined" state)
@@ -172,7 +174,12 @@
              (car(execute(x) state))
              (error "input is not a pair for eval_car.")))))
 
-;function outputs rest of the values of a list.
+;evaluate cdr
+;returns second element of a pair
+;Arguments:
+; x : the list of arguments to the function
+; state : the curret state of the stack
+;Returns : second element.
 (define (eval_cdr x state)
   (if (null? x)
      (error "input is null for eval_cdr")
@@ -182,52 +189,84 @@
              (cdr(execute(x) state))
              (error "input is not a list.")))))
 
+;evaluate cons
+;joins two values into a pair
+;Arguments:
+; x : the list of arguments to the function
+; state : the curret state of the stack
+;Returns : a pair.
 (define (eval_cons x state)
   (if (and  (pair? x) (pair? (cdr x)))
     (cons (car x) (car (cdr x)))
     (error "Error in function eval_cons, x is not a pair.")))
 
 ;logical operators
+;evaluates and
+;Performs the and function
+;Arguments:
+; x : the list of arguments to the function
+; state : the curret state of the stack
+;Returns :    #t or  #f.
 (define (eval_and x state)
-  (if (pair? x)
-    (if(pair? (car(cdr x)))
-      (and (car x) (execute(car(cdr x) state)))
-      (and (car x) (car(cdr x))))
-    (if(pair? (car x))
-      (and (execute(car x)state) (execute(car(cdr x) state)))
-      (and (execute(car x)state) (car(cdr x))))))
+  (if (not (null? x))
+      (and (execute(car x) state))
+      (error "eval_not is not not null.")))
 
+;evaluates or
+;Performs the or function
+;Arguments:
+; x : the list of arguments to the function
+; state : the curret state of the stack
+;Returns :    #t or  #f.
 (define (eval_or x state)
-  (if (pair? x)
-    (if(pair? (car(cdr x)))
-      (or (car x) (execute(car(cdr x) state)))
-      (or (car x) (car(cdr x))))
-    (if(pair? (car x))
-      (or (execute(car x) state) (execute(car(cdr x) state)))
-      (or (execute(car x) state) (car(cdr x))))))
-
+    (if (not(null? x))
+      (or (execute(car x) state))
+      (error "eval_not is not not null.")))
+;evaluates xor
+;Performs the xor function
+;Arguments:
+; x : the list of arguments to the function
+; state : the curret state of the stack
+;Returns :    #t or  #f.
 (define (eval_xor x state)
-  (if (pair? x)
-    (if(pair? (car(cdr x)))
-      (xor (car x) (execute(car(cdr x) state)))
-      (xor (car x) (car(cdr x))))
-    (if(pair? (car x))
-      (xor (execute(car x) state) (execute(car(cdr x) state)))
-      (xor (execute(car x) state) (car(cdr x))))))
+   (if (not(null? x))
+      (xor (execute(car x) state))
+      (error "eval_not is not not null.")))
 
+;evaluates not
+;Performs the not function
+;Arguments:
+; x : the list of arguments to the function
+; state : the curret state of the stack
+;Returns :   not #t or not #f.
 (define (eval_not x state)
-  (if (pair? x)
-    (if(pair? (car(cdr x)))
-      (not (car x) (execute(car(cdr x) state)))
-      (not (car x) (car(cdr x))))
-    (if(pair? (car x))
-      (not (execute(car x)) (execute(car(cdr x) state)))
-      (not (execute(car x)) (car(cdr x))))))
+  (if (not(null? x))
+      (not (execute(car x) state))
+      (error "eval_not is not not null.")))
+      
 
+;evaluates pair?
+;Performs the pair? function
+;Arguments:
+; x : the list of arguments to the function
+; state : the curret state of the stack
+;Returns :  #t or #f.
 (define (eval_pair? x state) (if (pair? (car x)) #t #f))
 
-(define (eval_list? x state) (if (list? (car x)) #t #f))
 
+;evaluates list?
+;Performs the list? function
+;Arguments:
+; x : the list of arguments to the function
+; state : the curret state of the stack
+;Returns :  #t or #f.
+(define (eval_list? x state) (if (list? (car x)) #t #f))
+;evaluates null?
+;Performs the null? function
+;Arguments:
+; x : the list of arguments to the function
+; state : the curret state of the stack
+;Returns :  #t or #f.
 (define (eval_null? x state)
   (if (null? x)
       #t
@@ -235,13 +274,30 @@
           #t
           #f)))
 
+;evaluates quote
+;Performs the quote function
+;Arguments:
+; x : the list of arguments to the function
+; state : the curret state of the stack
+;Returns : #t or #f.
 (define (eval_num? x state) (if (number? x) #t #f))
 
+;evaluates quote
+;Performs the let function
+;Arguments:
+; x : the list of arguments to the function
+; state : the curret state of the stack
+;Returns : #t or #f.
 (define (eval_quote x state) (quote x) )
 
-
+;evaluates quote
+;Performs if statement
+;Arguments:
+; x : the list of arguments to the function
+; state : the curret state of the stack
+;Returns : returns the body if true else returns else body.
 (define (eval_if x state)
-  (if (list? x)
+  (if (list? x) ; this checks if the param x is a list
     (if (list? (first x))
       (let ([a (execute(first x) state)])
       (if(equal? a #t)
@@ -275,11 +331,7 @@
             lamb ;(error "We would like to return a partially evaluated lambda, but to do that you cannot execute us! partial : " lamb " state: " state); sadly racket requires we crash here (argument mismatch)
             (let ([keyValueList (cons (car arg) (cons (car param) '()))] [leftoverArg (cdr arg)] [leftoverParam (cdr param)])
               (eval_lambda_new (cons 'lambda (cons leftoverArg
-                                                     (cons (list 'let (cons keyValueList '()) body) '())
-                                                   )) leftoverParam state)
-              )))
-    )
-  )
+                                                     (cons (list 'let (cons keyValueList '()) body) '()))) leftoverParam state))))))
                      
 
 
