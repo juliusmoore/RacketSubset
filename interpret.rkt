@@ -16,7 +16,7 @@
  ; )
 
 (define (getPairWithKey key state)
-  (println (list "Called getPairWithKey: " key " : in state : " state))
+  ;(println (list "Called getPairWithKey: " key " : in state : " state))
   (if (null? state)
       (error "Oops: undefined : " key)
       (if (pair? state)
@@ -68,7 +68,7 @@
                   [(equal? func 'quote) (eval_quote defi state)] ;quotes
                   [(equal? func 'lambda) (eval_lambda rkt '() state)]
                   [else
-                   (println (list " rkt : " rkt " : func : " func " : defi : " defi " : state : " state))
+                   ;(println (list " rkt : " rkt " : func : " func " : defi : " defi " : state : " state))
                    (execute (cons (getPairWithKey func state) defi) state)
                    ])
                 )))
