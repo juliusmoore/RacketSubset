@@ -1,19 +1,11 @@
 #lang racket
-;;;
+
+; Racket Interpreter
+; Course Project for Programming Languages - CPSC 3740 - Spring 2019 - Prof. Howard Cheng
+; This interpreter was written by Julius Moore 001167698 and Justin Onoferychuk 001212560
+
 (define (startEval rkt) (execute rkt '()))
-;
-;(define (getPairWithKey key state)
-;  (if (pair? state)
- ;     (if (null? state)
-  ;        (error key "is undefined")
- ;         (let ([candidate (car state)])
- ;           (if (pair? candidate)
-;                (if (equal? (car candidate) key)
-;                    (cdr candidate)
-;                    (getPairWithKey key (cdr state)))
-;                (error "The state has been corrupted by an unparist"))))
-;      (error "The state is not a pair!"))
- ; )
+
 
 (define (getPairWithKey key state)
   ;(println (list "Called getPairWithKey: " key " : in state : " state))
@@ -26,17 +18,6 @@
                 (getPairWithKey key continuation)))
       (error "Oops: The state cannot be a literal: " state))))
 
-
-;Create a bug! Pass in an empty list in defi that was generated instead of being a real argument. We will then execute defi 
-;(define (execute_var func defi state)
-;  (print (list "state : " state))
- ; (if (pair? func)
-;     (error "THis is not a variable : " func " in state : " state)
- ;    (if (pair? defi)
-;     (if (null? defi)
-  ;       (execute (getPairWithKey func state) state)
- ;        (execute (cons (getPairWithKey func state) defi) state))
-;     (execute (list (getPairWithKey func state) defi) state))))
 
 (define (execute rkt state)
   (if (pair? rkt)
@@ -84,6 +65,12 @@
   )
   )
 
+;evaluates + symbol
+;adds two value 
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns : a added value.
 ;this function adds two values 
 (define (eval_add x state)
   (if (not (null? x))
@@ -94,7 +81,12 @@
        (raise-arguments-error 'eval_add "not not null" "first parameter" x)));line 3
  
        
-
+;evaluates - symbol
+;subtracts two value 
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns : a subtracted  value.
 ;this function subtracts  two values 
 (define (eval_sub x state)
       (if (not (null? x))
@@ -104,6 +96,12 @@
             (raise-arguments-error 'eval_sub "not a pair" "first parameter" x ))
         (raise-arguments-error 'eval_sub "not not null" "first parameter" x)));line 3
 
+;evaluates * symbol
+;multiplies two value 
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns : a multiplied value.
 ;this function multiply  two values 
 (define (eval_mult x state)
     (if (not(null? x))
@@ -112,6 +110,12 @@
           (raise-arguments-error 'eval_mult "not a pair" "first parameter" x ))
       (raise-arguments-error 'eval_mult "not not null" "first parameter" x)));line 3
 
+;evaluates / symbol
+;divides two value 
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns : a divided value.
 ;this function divides two values 
 (define (eval_div x state)
    (if (not(null? x))
@@ -120,6 +124,12 @@
          (raise-arguments-error 'eval_div "not pair" "first parameter" x ))
      (raise-arguments-error 'eval_div "not not null" "first parameter" x)));line 3
 
+;evaluates  equal, but with equal?
+;returns true if the lhs is equal rhs
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns : #t or #f.
 ;this function checks to see if two values are equal, but with equal?.
 (define (eval_equal x state)
    (if (not(null? x))
@@ -128,6 +138,12 @@
          (raise-arguments-error 'eval_div "not pair" "first parameter" x ))
      (raise-arguments-error 'eval_div "not not null" "first parameter" x)));line 3
 
+;evaluates  equal, but with =
+;returns true if the lhs is equal rhs
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns : #t or #f.
 ;this function checks to see if two values are equal, but with =.
 (define (eval_eq x state)
    (if (not(null? x))
@@ -136,6 +152,12 @@
          (raise-arguments-error 'eval_div "not pair" "first parameter" x ))
      (raise-arguments-error 'eval_div "not not null" "first parameter" x)));line 3
 
+;evaluates less then or equal
+;returns true if the lhs is less then or equal rhs
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns : #t or #f.
 ; this function checks to see if left is less then or equal to right.
 (define (eval_LTE x state)
    (if (not(null? x))
@@ -144,6 +166,12 @@
          (raise-arguments-error 'eval_div "not pair" "first parameter" x ))
      (raise-arguments-error 'eval_div "not not null" "first parameter" x)));line 3
 
+;evaluates less then
+;returns true if the lhs is less then rhs
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns : #t or #f.
 ; this function checks to see if left is less then to right.
 (define (eval_LT x state)
    (if (not(null? x))
@@ -152,6 +180,12 @@
          (raise-arguments-error 'eval_div "not pair" "first parameter" x ))
      (raise-arguments-error 'eval_div "not not null" "first parameter" x)));line 3
 
+;evaluates greater then or equal
+;returns true if the lhs is greater then or equal rhs
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns : #t or #f.
 ;This function checks to see if left is greater then or equal to right.
 (define (eval_GTE x  state)
     (if (not(null? x))
@@ -160,6 +194,12 @@
          (raise-arguments-error 'eval_div "not pair" "first parameter" x ))
      (raise-arguments-error 'eval_div "not not null" "first parameter" x)));line 3
 
+;evaluates greater then
+;returns true if the lhs is greater then rhs
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns : #t or #f.
 ;This function checks to see if left is greater then to right.
 (define (eval_GT x  state)
    (if (not(null? x))
@@ -168,6 +208,12 @@
          (raise-arguments-error 'eval_div "not pair" "first parameter" x ))
      (raise-arguments-error 'eval_div "not not null" "first parameter" x)));line 3
 
+;evaluates car
+;returns first element of a pair
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns : first element is returned.
 ;function outputs first value of a list.
 (define (eval_car x state)
   (if (null? x)
@@ -178,6 +224,12 @@
              (car(execute(x) state))
              (error "input is not a pair for eval_car.")))))
 
+;evaluates cdr
+;returns second element of a pair
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns : second element is returned.
 ;function outputs rest of the values of a list.
 (define (eval_cdr x state)
   (if (null? x)
@@ -188,12 +240,26 @@
              (cdr(execute(x) state))
              (error "input is not a list.")))))
 
+;evaluates cons
+;joins two values into a pair
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns : a pair.
 (define (eval_cons x state)
   (if (and  (pair? x) (pair? (cdr x)))
     (cons (car x) (car (cdr x)))
     (error "Error in function eval_cons, x is not a pair.")))
 
+
 ;logical operators
+
+;evaluates and
+;Performs the and function
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns :    #t or  #f.
 (define (eval_and x state)
   (if (pair? x)
     (if(pair? (car(cdr x)))
@@ -203,6 +269,12 @@
       (and (execute(car x)state) (execute(car(cdr x) state)))
       (and (execute(car x)state) (car(cdr x))))))
 
+;evaluates or
+;Performs the or function
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns :    #t or  #f.
 (define (eval_or x state)
   (if (pair? x)
     (if(pair? (car(cdr x)))
@@ -212,6 +284,12 @@
       (or (execute(car x) state) (execute(car(cdr x) state)))
       (or (execute(car x) state) (car(cdr x))))))
 
+;evaluates xor
+;Performs the xor function
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns :    #t or  #f.
 (define (eval_xor x state)
   (if (pair? x)
     (if(pair? (car(cdr x)))
@@ -221,6 +299,12 @@
       (xor (execute(car x) state) (execute(car(cdr x) state)))
       (xor (execute(car x) state) (car(cdr x))))))
 
+;evaluates not
+;Performs the not function
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns :   not #t or not #f.
 (define (eval_not x state)
   (if (pair? x)
     (if(pair? (car(cdr x)))
@@ -230,10 +314,28 @@
       (not (execute(car x)) (execute(car(cdr x) state)))
       (not (execute(car x)) (car(cdr x))))))
 
+;evaluates pair?
+;Performs the pair? function
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns :  #t or #f.
 (define (eval_pair? x state) (if (pair? (car x)) #t #f))
 
+;evaluates list?
+;Performs the list? function
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns :  #t or #f.
 (define (eval_list? x state) (if (list? (car x)) #t #f))
 
+;evaluates null?
+;Performs the null? function
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns :  #t or #f.
 (define (eval_null? x state)
   (if (null? x)
       #t
@@ -241,11 +343,31 @@
           #t
           #f)))
 
+
+;evaluates number?
+;Performs the number? function
+;Arguments:
+; x : list of arguments to the function
+; state : the current state of the stack
+; Returns : #t or #f
 (define (eval_num? x state) (if (number? x) #t #f))
 
+
+;evaluates quote
+;Performs the let function
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns : #t or #f.
 (define (eval_quote x state) (quote x) )
 
 
+;evaluates the if function
+;Performs if function
+;Arguments:
+; x : the list of arguments to the function
+; state : the current state of the stack
+;Returns : asks execute to evaluate the true body if true or the false body if false
 (define (eval_if x state)
   (if (list? x)
     (if (list? (first x))
@@ -257,10 +379,6 @@
     (error "everything is on fire in eval_if.")))
 
 
-(define (eval_lambda lamb args state)
-  (eval_lambda_new lamb args state)
-  )
-
 ;bug in design:
 ; I have chosen not to deal with this format (lambda x x) (only deal with arguments as list (lambda (x) x) ...)
 ;we could receive:
@@ -271,7 +389,7 @@
 ;no action (nothing to evaluate) (no parameters to evaluate the lambda on)
 ;a fully evaluated lambda that is executed (#arguments = #parameters)
 ;a fully evaluated lambda that is executed, then dumped into a longer list (more parameters given than there are arguments in the lambda)
-(define (eval_lambda_new lamb param state)
+(define (eval_lambda lamb param state)
   (let ([arg (cadr lamb)][body (caddr lamb)])
     (if (null? arg)
         (if (null? param)
@@ -280,20 +398,24 @@
         (if (null? param)
             lamb ;(error "We would like to return a partially evaluated lambda, but to do that you cannot execute us! partial : " lamb " state: " state); sadly racket requires we crash here (argument mismatch)
             (let ([keyValueList (cons (car arg) (cons (car param) '()))] [leftoverArg (cdr arg)] [leftoverParam (cdr param)])
-              (eval_lambda_new (cons 'lambda (cons leftoverArg
+              (eval_lambda (cons 'lambda (cons leftoverArg
                                                      (cons (list 'let (cons keyValueList '()) body) '())
                                                    )) leftoverParam state)
               )))
     )
   )
                      
-
+; Computes the resulting state of the stack where a pair to be added onto the current state of the stack
+; Takes p, the pair (x 1) to be added, and state, the current state of the stack
+; Returns the new stack with the state added
 (define (producePristinePair p state)
   (if (and (pair? p) (not (null? p)))
   (cons (car p)  (car (cdr p)))
   (error "You have caused a calamity: produceExecutedPair on " p " state : " state)))
 
-;Append all the key value pairs in a list into the state ( (x . 3) (y . 5) ) -> state
+;Append all the key value pairs in a list (x 3) into the state ( (x . 3) (y . 5) ) -> state
+;Calls producePristinePair to perform the minimal processing necessary
+;Does not evaluate anything
 (define (addToState vars state)
   (if (and (pair? vars) (not (null? vars)))
       (let ([addition (producePristinePair (car vars) state)] [rest (cdr vars)])
