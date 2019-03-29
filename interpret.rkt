@@ -16,6 +16,7 @@
  ; )
 
 (define (getPairWithKey key state)
+  (println (list "Called getPairWithKey: " key " : in state : " state))
   (if (null? state)
       (error key "is undefined")
       (if (pair? state)
@@ -294,8 +295,8 @@
   (if (and (pair? vars) (not (null? vars)))
       (let ([addition (car vars)] [rest (cdr vars)])
            (if (null? rest)
-               (cons addition (state))
-               (cons addition ((addToState rest state)))))
+               (cons addition state)
+               (cons addition (addToState rest state))))
       (error "You have caused a calamity: addToState on " vars " state : " state)))
 
 ;Perform the process of creating a (name . value) pair where value has been evaluated to the extent possible.
@@ -317,8 +318,8 @@
   (if (and (pair? vars) (not (null? vars)))
       (let ([addition (produceExecutedPair (car vars) state)] [rest (cdr vars)])
         (if (null? rest)
-            (cons addition (cons state '()))
-               (cons addition ((evalToState rest state)))))
+            (cons addition state)
+               (cons addition (evalToState rest state))))
       (error "You have caused a calamity: evalToState on " vars "state : " state)))
 
  ;evaluate then store
