@@ -18,13 +18,13 @@
 (define (getPairWithKey key state)
   (println (list "Called getPairWithKey: " key " : in state : " state))
   (if (null? state)
-      (error key "is undefined")
+      (error "Oops: undefined : " key)
       (if (pair? state)
           (let ([candidate (car state)] [continuation (cdr state)])
             (if (equal? (car candidate) key)
                 (cdr candidate); we are storing pure pairs not lists
                 (getPairWithKey key continuation)))
-      (error "The state cannot be a literal: " state))))
+      (error "Oops: The state cannot be a literal: " state))))
 
 
 ;Create a bug! Pass in an empty list in defi that was generated instead of being a real argument. We will then execute defi 
@@ -63,12 +63,12 @@
                   [(equal? func 'cons) (eval_cons defi state)]
                   [(equal? func 'pair?) (eval_pair? defi state)]
                   [(equal? func 'if) (eval_if defi state)]
-                  [(equal? func 'lambda) (eval_lambda defi state)]
                   [(equal? func 'let) (eval_let defi state)]
                   [(equal? func 'letrec) (eval_letrec defi state)]
                   [(equal? func 'quote) (eval_quote defi state)] ;quotes
                   [(equal? func 'lambda) (eval_lambda rkt '() state)]
                   [else
+                   (println (list " rkt : " rkt " : func : " func " : defi : " defi " : state : " state))
                    (execute (cons (getPairWithKey func state) defi) state)
                    ])
                 )))
@@ -288,12 +288,15 @@
   )
                      
 
-
+(define (producePristinePair p state)
+  (if (and (pair? p) (not (null? p)))
+  (cons (car p)  (car (cdr p)))
+  (error "You have caused a calamity: produceExecutedPair on " p " state : " state)))
 
 ;Append all the key value pairs in a list into the state ( (x . 3) (y . 5) ) -> state
 (define (addToState vars state)
   (if (and (pair? vars) (not (null? vars)))
-      (let ([addition (car vars)] [rest (cdr vars)])
+      (let ([addition (producePristinePair (car vars) state)] [rest (cdr vars)])
            (if (null? rest)
                (cons addition state)
                (cons addition (addToState rest state))))
