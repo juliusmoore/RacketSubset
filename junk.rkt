@@ -28,7 +28,8 @@
             (if (pair? func)
                 (if (equal? (car func) 'lambda)
                     (eval_lambda func defi state)
-                    (error "Goats don't go baaah : We have not found a lambda in " rkt " state : " state))
+                    (execute (cons (execute (car func) state) defi) state))
+                    ;(error "Goats don't go baaah : We have not found a lambda in " rkt " state : " state)) ; change thi
                 (cond
                   [(equal? func '+) (eval_add defi state)]
                   [(equal? func '-) (eval_sub defi state)]
