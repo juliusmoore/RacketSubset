@@ -10,7 +10,11 @@
 (define (getPairWithKey key state)
   ;(println (list "Called getPairWithKey: " key " : in state : " state))
   (if (null? state)
-      (error "Oops: undefined : " key)
+  
+      ;(if (boolean? key)
+       key
+       ;(getPairWithKey state key) )
+      ;(error "Oops: undefined : " key) ;we could replace this error with execute
       (if (pair? state)
           (let ([candidate (car state)] [continuation (cdr state)])
             (if (equal? (car candidate) key)
@@ -47,16 +51,17 @@
                   [(equal? func 'let) (eval_let defi state)]
                   [(equal? func 'letrec) (eval_letrec defi state)]
                   [(equal? func 'quote) (eval_quote defi state)] ;quotes
-                  [(equal? func 'lambda) (eval_lambda rkt '() state)]
+                  [(equal? func 'lambda) (eval_lambda rkt '() state)]              
                   [else
                    ;(println (list " rkt : " rkt " : func : " func " : defi : " defi " : state : " state))
                    (execute (cons (getPairWithKey func state) defi) state)
                    ])
                 )))
+      ;this bugger could be a method
       (if (number? rkt)
           rkt ;only if its a literal, or a representation of a literal, is this "ok"
           (let ([val (getPairWithKey rkt state)])
-            (if (number? val)
+            (if (or (number? val) (boolean? val))
                 val
                 (execute val state) ; chain of variables? -> will catch error in next getPairWithKey
             )
