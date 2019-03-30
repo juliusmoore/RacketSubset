@@ -360,7 +360,12 @@
 ; x : the list of arguments to the function
 ; state : the current state of the stack
 ;Returns : #t or #f.
-(define (eval_quote x state) (quote x) )
+(define (eval_quote x state)
+  (if (null? x)
+      '()
+      (if (pair? x)
+          (car x)
+          (error "Eval_quote: Pair instead of list" x " : state : " state))))
 
 
 ;evaluates the if function
@@ -412,7 +417,7 @@
 (define (producePristinePair p state)
   (if (and (pair? p) (not (null? p)))
   (cons (car p)  (car (cdr p)))
-  (error "You have caused a calamity: produceExecutedPair on " p " state : " state)))
+  (error "You have caused a calamity: producePristinePair on " p " state : " state)))
 
 ;Append all the key value pairs in a list (x 3) into the state ( (x . 3) (y . 5) ) -> state
 ;Calls producePristinePair to perform the minimal processing necessary
