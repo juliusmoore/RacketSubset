@@ -62,10 +62,10 @@
                    (execute (cons (getPairWithKey func state) defi) state)
                    ])
                 )))
-      (if (number? rkt)
+      (if (or (number? rkt) (boolean? rkt))
           rkt ;only if its a literal, or a representation of a literal, is this "ok"
           (let ([val (getPairWithKey rkt state)])
-            (if (number? val)
+            (if (or (number? val) (boolean? val))
                 val
                 (execute val state) ; chain of variables? -> will catch error in next getPairWithKey
             )
