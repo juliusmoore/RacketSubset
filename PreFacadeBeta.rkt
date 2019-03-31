@@ -27,7 +27,7 @@
           (let ([func (car rkt)] [defi (cdr rkt)])
             (if (pair? func)
                     (if (not(null? (cdr func)))
-                        (execute func (evalToState (cons (cons s defi) '()) state))
+                        (execute func (evalToState_lambda (cons (cons s defi) '()) state))
                     (if ( equal? (car func) 'lambda)
                         (execute func state)
                         (execute (car func ) state)))
@@ -61,10 +61,10 @@
                    (execute (cons (getPairWithKey func state) defi) state)
                    ])
                 )))
-      (if (number? rkt)
+      (if (or (number? rkt) (boolean? rkt))
           rkt ;only if its a literal, or a representation of a literal, is this "ok"
           (let ([val (getPairWithKey rkt state)])
-            (if (number? val)
+            (if (or (number? val) (boolean? val))
                 val
                 (execute val state) ; chain of variables? -> will catch error in next getPairWithKey
             )
@@ -456,11 +456,35 @@
 ; p : the (name . value) pair whose value should be evaluated
 ; state : the current state of the stack
 ; Returns : 
-(define (produceExecutedPair p state)
+(define (produceExecutedPair_lambda p state)
   (if (and (pair? p) (not (null? p)))
       (if (pair? (cdr p)) ; This error checking checks if cdr p, just changes how the lhs of cons is handled.
           (cons (car p) (execute (car (cdr p)) state)) ;body: lhs: (execute (car (cdr p)) state) 
           (cons (car p) (execute  (cdr p) state))) ; else: lhs: (execute  (cdr p) state)
+  (error "You have caused a calamity: produceExecutedPair on " p " state : " state)))
+
+;Evaluate the values in a list of (name . value) pairs and store the evaluations with their names as a state
+;Arguments:
+; vars : the list of name-value pairs to have their values evalutated
+; state : the state of the stack to append to
+;Returns: A state/stack with the name-value pairs added to the front/top
+(define (evalToState_lambda vars state)
+  (if (and (pair? vars) (not (null? vars)))
+      (let ([addition (produceExecutedPair_lambda (car vars) state)] [rest (cdr vars)])
+        (if (null? rest)
+            (cons addition state)
+               (cons addition (evalToState rest state))))
+      (error "You have caused a calamity: evalToState on " vars "state : " state)))
+
+
+;Perform the process of creating a (name . value) pair where value has been evaluated to the extent possible.
+;Arguments:
+; p : the (name . value) pair whose value should be evaluated
+; state : the current state of the stack
+; Returns : 
+(define (produceExecutedPair p state)
+  (if (and (pair? p) (not (null? p)))
+  (cons (car p) (execute (car (cdr p)) state))
   (error "You have caused a calamity: produceExecutedPair on " p " state : " state)))
 
 ;Evaluate the values in a list of (name . value) pairs and store the evaluations with their names as a state

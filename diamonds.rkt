@@ -7,6 +7,16 @@
 
 (define (startEval rkt) (execute rkt '()))
 
+(define (partial_map f l state)
+  (if (or (null? l) (not (pair? l)))
+      (error "error for our parital map f : " f " : l : " l " : state : " state)
+      (let ([singleton (car l)] [continuation (cdr l)])
+        (if (null? continuation)
+            (f singleton state)
+            (cons (f singleton state) (partial_map f continuation state)))
+        )
+      )
+)
 
 (define (getPairWithKey key state)
   ;(println (list "Called getPairWithKey: " key " : in state : " state))
@@ -56,7 +66,7 @@
                   [(equal? func 'let) (eval_let defi state)]
                   [(equal? func 'letrec) (eval_letrec defi state)]
                   [(equal? func 'quote) (eval_quote defi state)] ;quotes
-                  [(equal? func 'lambda) (eval_lambda rkt '() state)]
+                  [(equal? func 'lambda) (cons func (partial_map execute defi state))]         ;(eval_lambda rkt '() state)
                   [else
                    ;(println (list " rkt : " rkt " : func : " func " : defi : " defi " : state : " state))
                    (execute (cons (getPairWithKey func state) defi) state)
