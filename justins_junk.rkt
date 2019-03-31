@@ -484,11 +484,9 @@
 ; state : the curret state of the stack
 ;Returns : Follows the path of the Racket.
 (define (eval_let x state)
-  (let ([variable  (car (car (cdr x)))][body  (cdr (cdr x))])
-    (if (null? (cdr body))
-      (execute (car body) (findReplace variable state state))
-      (execute body (findReplace variable state state))
-     )))
+  (if (and (pair? x) (equal? (length x) 2))
+      (execute (car (cdr x)) (addToState (car x) state)) ;this is just letrec
+      (error "You have caused a calamity: let on " x " state : " state)))
 
  ;store then evaluate
 ;Performs the letrec function of racket.
