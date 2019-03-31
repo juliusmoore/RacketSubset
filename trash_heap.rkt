@@ -27,7 +27,7 @@
           (let ([func (car rkt)] [defi (cdr rkt)])
             (if (pair? func)
                 (if (equal? (car func) 'lambda)
-                    (eval_lambda func defi state)
+                    (eval_lambda func defi '() state)
                     (execute (cons (execute func state) defi) state))
                     ;(error "Goats don't go baaah : We have not found a lambda in " rkt " state : " state)) ; change thi
                 (cond
@@ -49,7 +49,7 @@
                   [(equal? func 'let) (eval_let defi state)]
                   [(equal? func 'letrec) (eval_letrec defi state)]
                   [(equal? func 'quote) (eval_quote defi state)] ;quotes
-                  [(equal? func 'lambda) (eval_lambda rkt '() state)]
+                  [(equal? func 'lambda) (eval_lambda rkt '() '() state)]
                   [else
                    ;(println (list " rkt : " rkt " : func : " func " : defi : " defi " : state : " state))
                    (execute (cons (getPairWithKey func state) defi) state)
@@ -390,20 +390,15 @@
 ;no action (nothing to evaluate) (no parameters to evaluate the lambda on)
 ;a fully evaluated lambda that is executed (#arguments = #parameters)
 ;a fully evaluated lambda that is executed, then dumped into a longer list (more parameters given than there are arguments in the lambda)
-(define (eval_lambda lamb param state)
+(define (eval_lambda lamb param bound state)
   (print (list " : lamb : " lamb " : param : " param " : state : " state))
   (let ([arg (cadr lamb)][body (caddr lamb)])
     (if (null? arg)
+        (execute (cons body param) (addToState bound state))
         (if (null? param)
-            (execute body state) ; simple lambda
-            (execute (cons (execute body state) param) state)) ; lambda may have returned a lambda, can keep trying
-        (if (null? param)
-            lamb ;(error "We would like to return a partially evaluated lambda, but to do that you cannot execute us! partial : " lamb " state: " state); sadly racket requires we crash here (argument mismatch)
-            (let ([keyValueList (cons (car arg) (cons (car param) '()))] [leftoverArg (cdr arg)] [leftoverParam (cdr param)])
-              (eval_lambda (cons 'lambda (cons leftoverArg
-                                                     (cons (list 'let (cons keyValueList '()) body) '())
-                                                   )) leftoverParam state)
-              )))
+            (list 'lambda arg (list 'let bound body)) ;boundTOList: convert from pair to list
+            (let ([addition (cons (car arg) (cons (car param) '()))] [argContinuation (cdr arg)] [paramContinuation (cdr param)])
+              (eval_lambda (list 'lambda argContinuation body) paramContinuation (cons addition (cons bound '())) state))))
     )
   )
                      
