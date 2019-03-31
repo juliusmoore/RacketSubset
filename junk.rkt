@@ -1,3 +1,4 @@
+
 #lang racket
 
 ; Racket Interpreter
@@ -26,9 +27,14 @@
           '()
           (let ([func (car rkt)] [defi (cdr rkt)])
             (if (pair? func)
-                (if (equal? (car func) 'lambda)
-                    (eval_lambda func defi state)
-                    (execute (append*   rkt) state ))
+                    (if (not(null? (cdr func)))
+                        (execute func (evalToState (cons (cons s defi) '()) state))
+                    (if ( equal? (car func) 'lambda)
+                        (execute func state)
+                        (execute (car func ) state)))
+                ;(if (equal? (car func) 'lambda)
+                 ;   (eval_lambda func defi state)
+                  ;  (execute (append*   rkt) state ))
                    ; (execute (cons (execute (car func) state) defi) state))
                     ;(error "Goats don't go baaah : We have not found a lambda in " rkt " state : " state)) ; change thi
                 (cond
@@ -65,8 +71,8 @@
             )
           )
       )
-  )
-  )
+  ))
+  
 
 ;evaluates + symbol
 ;adds two value 
@@ -397,45 +403,36 @@
 ;no action (nothing to evaluate) (no parameters to evaluate the lambda on)
 ;a fully evaluated lambda that is executed (#arguments = #parameters)
 ;a fully evaluated lambda that is executed, then dumped into a longer list (more parameters given than there are arguments in the lambda)
-(define (eval_lambda lamb param state)
+(define (eval_lambda lamb param state)  
+  (println (list 'lamb:  lamb))
+  (println (list 'param:  param))
+  (println (list 'state:  state))
+  (let ([variable  (car (car (cdr lamb)))][body  (cdr (cdr lamb))])
+    (if (null? (cdr body))
+      (execute (car body) (findReplace variable state state))
+      (execute body (findReplace variable state state))
+     )))
   
-  (let ([arg (cadr lamb)][body (caddr lamb)])
-    (evalToState (cons 'AAA param) state)
-    (if (null? arg)
-        (if (null? param)
-            (execute body state) ; simple lambda
-            (execute (cons (execute body state) param) state)) ; lambda may have returned a lambda, can keep trying
-        (if (null? param)
-            lamb ;(error "We would like to return a partially evaluated lambda, but to do that you cannot execute us! partial : " lamb " state: " state); sadly racket requires we crash here (argument mismatch)
-            (let ([keyValueList (cons (car arg) (cons (car param) '()))] [leftoverArg (cdr arg)] [leftoverParam (cdr param)])
-
-              
-              (eval_lambda (cons 'lambda (cons leftoverArg
-                                                     (cons (list 'let (cons keyValueList '()) body) '())
-                                                   )) leftoverParam state)
-              )))
-    )
-  )
-;when calling findReplaceAAA for the first time make sure that both tmpstate and state are the same list of pairs
+;this defines the defined value s, which is a gensym of s. used for definitions
+(define s (gensym 's))
+;when calling findReplace for the first time make sure that both tmpstate and state are the same list of pairs
 ; both tmpstate and state should like like: ((x . 5)()())
 ;this method finds the value 'AAA from a pair which contains, replaces 'AAA with the @param variable
-
-
-(define (findReplaceAAA variable tmpstate state)
+(define (findReplace variable tmpstate state)
 (if( pair?  tmpstate)
    (if (pair? (car tmpstate))
-       (if (equal? 'AAA (caar tmpstate))
-           (FindReplace variable  tmpstate state)
+       (if (equal? s (caar tmpstate))
+           (cons (cons variable (cdar tmpstate)) (remove (car  tmpstate) state))
            (if (and (<= 1 (length tmpstate)) (not ( equal? tmpstate (last state))))
-               (findReplaceAAA variable (cdr tmpstate) state)
+               (findReplace variable (cdr tmpstate) state)
                state))
            
-       (raise-arguments-error 'findReplaceAAA " you messed up"))
+       (raise-arguments-error 'findReplace " you messed up"))
    state) )
 
-(define (FindReplace variable tmpstate state)
+
   
- (cons (cons variable (cdar tmpstate)) (remove (car  tmpstate) state)))
+
 ; Computes the resulting state of the stack where a pair to be added onto the current state of the stack
 ; Takes p, the pair (x 1) to be added, and state, the current state of the stack
 ; Returns the new stack with the state added
@@ -462,7 +459,9 @@
 ; Returns : 
 (define (produceExecutedPair p state)
   (if (and (pair? p) (not (null? p)))
-  (cons (car p) (execute (car (cdr p)) state))
+      (if (pair? (cdr p)) ; This error checking checks if cdr p, just changes how the lhs of cons is handled.
+          (cons (car p) (execute (car (cdr p)) state)) ;body: lhs: (execute (car (cdr p)) state) 
+          (cons (car p) (execute  (cdr p) state))) ; else: lhs: (execute  (cdr p) state)
   (error "You have caused a calamity: produceExecutedPair on " p " state : " state)))
 
 ;Evaluate the values in a list of (name . value) pairs and store the evaluations with their names as a state
