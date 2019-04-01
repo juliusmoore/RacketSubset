@@ -247,13 +247,9 @@
 ;Returns : first element is returned.
 ;function outputs first value of a list.
 (define (eval_car x state)
-  (if (null? x)
-     (error "input is null for Eval_Car")
-     (if (pair? x)
-         (caadr(append* x)) ; car car cdr
-         (if (pair? (execute(x) state) ) 
-             (car(execute(x) state))
-             (error "input is not a pair for eval_car.")))))
+  (if (or (null? x) (not (pair? x)))
+      (error "." x " is not a list : state : " state)
+(car (execute (car x) state))))
 
 ;evaluates cdr
 ;returns second element of a pair
@@ -263,13 +259,9 @@
 ;Returns : second element is returned.
 ;function outputs rest of the values of a list.
 (define (eval_cdr x state)
-  (if (null? x)
-     (error "input is null for eval_cdr")
-     (if (list? x)        
-         (cdadr(append* x)) ;cdr car cdr
-         (if (list? (execute(x) state) ) 
-             (cdr(execute(x) state))
-             (error "input is not a list.")))))
+  (if (or (null? x) (not (pair? x)))
+      (error "." x " is not a list : state : " state)
+(cdr (execute (car x) state))))
 
 ;evaluates cons
 ;joins two values into a pair
