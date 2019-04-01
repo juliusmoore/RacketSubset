@@ -3,7 +3,7 @@
 ;Test Helpers
 
 ;tests rkt
-;Note: Recommend uncommenting line 31 for more output when testing
+;Note: Recommend uncommenting line 45 for more output when testing (will show the state and racket being evaluated)
 (define (testEval rkt)
   (let ([us (startEval rkt)][them (expect-eval rkt)])
     (if (equal? us them)
@@ -28,7 +28,7 @@
 (define (startEval rkt) (execute rkt '()))
 
 (define (getPairWithKey key state)
-  ;;(;;;println (list "Called getPairWithKey: " key " : in state : " state))
+  ;;(println (list "Called getPairWithKey: " key " : in state : " state))
   (if (null? state)
       (error "Oops: undefined : " key)
       (if (pair? state)
@@ -42,7 +42,7 @@
 ;Arguments: rkt, the racket code AND state, the current state of the stack
 ;Returns: the evaluation of the code
 (define (execute rkt state)
-  ;(;;;println (list rkt ': state))
+  (println (list rkt ': state))
   (if (pair? rkt)
       (if (null? rkt)
           '()
