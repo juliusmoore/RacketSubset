@@ -10,11 +10,7 @@
 (define (getPairWithKey key state)
   ;(println (list "Called getPairWithKey: " key " : in state : " state))
   (if (null? state)
-  
-      ;(if (boolean? key)
-       key
-       ;(getPairWithKey state key) )
-      ;(error "Oops: undefined : " key) ;we could replace this error with execute
+      (error "Oops: undefined : " key)
       (if (pair? state)
           (let ([candidate (car state)] [continuation (cdr state)])
             (if (equal? (car candidate) key)
@@ -24,14 +20,22 @@
 
 
 (define (execute rkt state)
+  (println (list rkt ': state))
   (if (pair? rkt)
       (if (null? rkt)
           '()
           (let ([func (car rkt)] [defi (cdr rkt)])
             (if (pair? func)
-                (if (equal? (car func) 'lambda)
-                    (eval_lambda func defi state)
-                    (error "Goats don't go baaah : We have not found a lambda in " rkt " state : " state))
+                    (if (not(null? (cdr func)))
+                        (execute func (evalToState_lambda (cons (cons s defi) '()) state))
+                    (if ( equal? (car func) 'lambda)
+                        (execute func state)
+                        (execute (car func ) state)))
+                ;(if (equal? (car func) 'lambda)
+                 ;   (eval_lambda func defi state)
+                  ;  (execute (append*   rkt) state ))
+                   ; (execute (cons (execute (car func) state) defi) state))
+                    ;(error "Goats don't go baaah : We have not found a lambda in " rkt " state : " state)) ; change thi
                 (cond
                   [(equal? func '+) (eval_add defi state)]
                   [(equal? func '-) (eval_sub defi state)]
@@ -51,14 +55,13 @@
                   [(equal? func 'let) (eval_let defi state)]
                   [(equal? func 'letrec) (eval_letrec defi state)]
                   [(equal? func 'quote) (eval_quote defi state)] ;quotes
-                  [(equal? func 'lambda) (eval_lambda rkt '() state)]              
+                  [(equal? func 'lambda) (eval_lambda rkt '() state)]
                   [else
                    ;(println (list " rkt : " rkt " : func : " func " : defi : " defi " : state : " state))
                    (execute (cons (getPairWithKey func state) defi) state)
                    ])
                 )))
-      ;this bugger could be a method
-      (if (number? rkt)
+      (if (or (number? rkt) (boolean? rkt))
           rkt ;only if its a literal, or a representation of a literal, is this "ok"
           (let ([val (getPairWithKey rkt state)])
             (if (or (number? val) (boolean? val))
@@ -67,8 +70,8 @@
             )
           )
       )
-  )
-  )
+  ))
+  
 
 ;evaluates + symbol
 ;adds two value 
@@ -364,7 +367,12 @@
 ; x : the list of arguments to the function
 ; state : the current state of the stack
 ;Returns : #t or #f.
-(define (eval_quote x state) (quote x) )
+(define (eval_quote x state)
+  (if (null? x)
+      '()
+      (if (pair? x)
+          (car x)
+          (error "Eval_quote: Pair instead of list" x " : state : " state))))
 
 
 ;evaluates the if function
@@ -394,29 +402,43 @@
 ;no action (nothing to evaluate) (no parameters to evaluate the lambda on)
 ;a fully evaluated lambda that is executed (#arguments = #parameters)
 ;a fully evaluated lambda that is executed, then dumped into a longer list (more parameters given than there are arguments in the lambda)
-(define (eval_lambda lamb param state)
-  (let ([arg (cadr lamb)][body (caddr lamb)])
-    (if (null? arg)
-        (if (null? param)
-            (execute body state) ; simple lambda
-            (execute (cons (execute body state) param) state)) ; lambda may have returned a lambda, can keep trying
-        (if (null? param)
-            lamb ;(error "We would like to return a partially evaluated lambda, but to do that you cannot execute us! partial : " lamb " state: " state); sadly racket requires we crash here (argument mismatch)
-            (let ([keyValueList (cons (car arg) (cons (car param) '()))] [leftoverArg (cdr arg)] [leftoverParam (cdr param)])
-              (eval_lambda (cons 'lambda (cons leftoverArg
-                                                     (cons (list 'let (cons keyValueList '()) body) '())
-                                                   )) leftoverParam state)
-              )))
-    )
-  )
-                     
+(define (eval_lambda lamb param state)  
+  (println (list 'lamb:  lamb))
+  (println (list 'param:  param))
+  (println (list 'state:  state))
+  (let ([variable  (car (car (cdr lamb)))][body  (cdr (cdr lamb))])
+    (if (null? (cdr body))
+      (execute (car body) (findReplace variable state state))
+      (execute body (findReplace variable state state))
+     )))
+  
+;this defines the defined value s, which is a gensym of s. used for definitions
+(define s (gensym 's))
+;when calling findReplace for the first time make sure that both tmpstate and state are the same list of pairs
+; both tmpstate and state should like like: ((x . 5)()())
+;this method finds the value 'AAA from a pair which contains, replaces 'AAA with the @param variable
+(define (findReplace variable tmpstate state)
+(if( pair?  tmpstate)
+   (if (pair? (car tmpstate))
+       (if (equal? s (caar tmpstate))
+           (cons (cons variable (cdar tmpstate)) (remove (car  tmpstate) state))
+           (if (and (<= 1 (length tmpstate)) (not ( equal? tmpstate (last state))))
+               (findReplace variable (cdr tmpstate) state)
+               state))
+           
+       (raise-arguments-error 'findReplace " you messed up"))
+   state) )
+
+
+  
+
 ; Computes the resulting state of the stack where a pair to be added onto the current state of the stack
 ; Takes p, the pair (x 1) to be added, and state, the current state of the stack
 ; Returns the new stack with the state added
 (define (producePristinePair p state)
   (if (and (pair? p) (not (null? p)))
   (cons (car p)  (car (cdr p)))
-  (error "You have caused a calamity: produceExecutedPair on " p " state : " state)))
+  (error "You have caused a calamity: producePristinePair on " p " state : " state)))
 
 ;Append all the key value pairs in a list (x 3) into the state ( (x . 3) (y . 5) ) -> state
 ;Calls producePristinePair to perform the minimal processing necessary
@@ -428,6 +450,32 @@
                (cons addition state)
                (cons addition (addToState rest state))))
       (error "You have caused a calamity: addToState on " vars " state : " state)))
+
+;Perform the process of creating a (name . value) pair where value has been evaluated to the extent possible.
+;Arguments:
+; p : the (name . value) pair whose value should be evaluated
+; state : the current state of the stack
+; Returns : 
+(define (produceExecutedPair_lambda p state)
+  (if (and (pair? p) (not (null? p)))
+      (if (pair? (cdr p)) ; This error checking checks if cdr p, just changes how the lhs of cons is handled.
+          (cons (car p) (execute (car (cdr p)) state)) ;body: lhs: (execute (car (cdr p)) state) 
+          (cons (car p) (execute  (cdr p) state))) ; else: lhs: (execute  (cdr p) state)
+  (error "You have caused a calamity: produceExecutedPair on " p " state : " state)))
+
+;Evaluate the values in a list of (name . value) pairs and store the evaluations with their names as a state
+;Arguments:
+; vars : the list of name-value pairs to have their values evalutated
+; state : the state of the stack to append to
+;Returns: A state/stack with the name-value pairs added to the front/top
+(define (evalToState_lambda vars state)
+  (if (and (pair? vars) (not (null? vars)))
+      (let ([addition (produceExecutedPair_lambda (car vars) state)] [rest (cdr vars)])
+        (if (null? rest)
+            (cons addition state)
+               (cons addition (evalToState rest state))))
+      (error "You have caused a calamity: evalToState on " vars "state : " state)))
+
 
 ;Perform the process of creating a (name . value) pair where value has been evaluated to the extent possible.
 ;Arguments:
@@ -471,4 +519,4 @@
 (define (eval_letrec x state)
   (if (and (pair? x) (equal? (length x) 2))
       (execute (car (cdr x)) (addToState (car x) state))
-      (error "You have caused a calamity: letrec on " x " state : " state)))
+(error "You have caused a calamity: letrec on " x " state : " state)))
