@@ -4,11 +4,13 @@
 ; Course Project for Programming Languages - CPSC 3740 - Spring 2019 - Prof. Howard Cheng
 ; This interpreter was written by Julius Moore 001167698 and Justin Onoferychuk 001212560
 
+;;Evaluates a subset of Racket
+;Takes rkt, the program to be evaluated
+;Returns the value of the program
 (define (startEval rkt) (execute rkt '()))
 
-
 (define (getPairWithKey key state)
-  ;(println (list "Called getPairWithKey: " key " : in state : " state))
+  ;;(println (list "Called getPairWithKey: " key " : in state : " state))
   (if (null? state)
       (error "Oops: undefined : " key)
       (if (pair? state)
@@ -18,7 +20,7 @@
                 (getPairWithKey key continuation)))
       (error "Oops: The state cannot be a literal: " state))))
 
-
+;Takes a piece of racket code and evaluated it in the context of the current state of the stack by 
 (define (execute rkt state)
   (println (list rkt ': state))
   (if (pair? rkt)
@@ -57,7 +59,7 @@
                   [(equal? func 'quote) (eval_quote defi state)] ;quotes
                   [(equal? func 'lambda) (eval_lambda rkt '() state)]
                   [else
-                   ;(println (list " rkt : " rkt " : func : " func " : defi : " defi " : state : " state))
+                   ;;(println (list " rkt : " rkt " : func : " func " : defi : " defi " : state : " state))
                    (execute (cons (getPairWithKey func state) defi) state)
                    ])
                 )))
@@ -403,9 +405,9 @@
 ;a fully evaluated lambda that is executed (#arguments = #parameters)
 ;a fully evaluated lambda that is executed, then dumped into a longer list (more parameters given than there are arguments in the lambda)
 (define (eval_lambda lamb param state)  
-  (println (list 'lamb:  lamb))
-  (println (list 'param:  param))
-  (println (list 'state:  state))
+  ;(println (list 'lamb:  lamb))
+  ;(println (list 'param:  param))
+  ;(println (list 'state:  state))
   (let ([variable  (car (car (cdr lamb)))][body  (cdr (cdr lamb))])
     (if (null? (cdr body))
       (execute (car body) (findReplace variable state state))
