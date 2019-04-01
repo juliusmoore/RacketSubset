@@ -3,9 +3,10 @@
 ;Test Helpers
 
 ;tests rkt
-;Note: Recommend uncommenting line 45 for more output when testing (will show the state and racket being evaluated)
+;Note: Recommend uncommenting line 46 for more output when testing (will show the state and racket being evaluated)
 (define (testEval rkt)
   (let ([us (startEval rkt)][them (expect-eval rkt)])
+    (println (list "startEval: " us " : racket : " them))
     (if (equal? us them)
         'pass
         'fail)))
