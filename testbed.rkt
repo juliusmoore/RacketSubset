@@ -1,5 +1,22 @@
 #lang racket
 
+;Test Helpers
+
+;tests rkt
+(define (testEval rkt)
+  (let ([us (startEval rkt)][them (expect-eval rkt)])
+    (if (equal? us them)
+        'pass
+        'fail)))
+  
+
+;Runs real Racket
+(define expect-eval
+  (let [(ye (make-base-namespace))]
+    (lambda (expr) (eval expr ye))
+    )
+  )
+
 ; Racket Interpreter
 ; Course Project for Programming Languages - CPSC 3740 - Spring 2019 - Prof. Howard Cheng
 ; This interpreter was written by Julius Moore 001167698 and Justin Onoferychuk 001212560
