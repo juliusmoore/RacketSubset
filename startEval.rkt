@@ -20,7 +20,9 @@
                 (getPairWithKey key continuation)))
       (error "Oops: The state cannot be a literal: " state))))
 
-;Takes a piece of racket code and evaluated it in the context of the current state of the stack by 
+;Takes a piece of racket code and evaluates it in the context of the current state of the stack
+;Arguments: rkt, the racket code AND state, the current state of the stack
+;Returns: the evaluation of the code
 (define (execute rkt state)
   (println (list rkt ': state))
   (if (pair? rkt)
@@ -457,7 +459,7 @@
 ;Arguments:
 ; p : the (name . value) pair whose value should be evaluated
 ; state : the current state of the stack
-; Returns : 
+; Returns : A state/stack with the name-value pairs added to the front/top
 (define (produceExecutedPair_lambda p state)
   (if (and (pair? p) (not (null? p)))
       (if (pair? (cdr p)) ; This error checking checks if cdr p, just changes how the lhs of cons is handled.
@@ -483,7 +485,7 @@
 ;Arguments:
 ; p : the (name . value) pair whose value should be evaluated
 ; state : the current state of the stack
-; Returns : 
+; Returns : A state/stack with the name-value pairs added to the front/top
 (define (produceExecutedPair p state)
   (if (and (pair? p) (not (null? p)))
   (cons (car p) (execute (car (cdr p)) state))
