@@ -3,6 +3,7 @@
 ;Test Helpers
 
 ;tests rkt
+;Note: Recommend uncommenting line 31 for more output when testing
 (define (testEval rkt)
   (let ([us (startEval rkt)][them (expect-eval rkt)])
     (if (equal? us them)
