@@ -1,4 +1,4 @@
-#lang racket
+#lang racket ;Julius Moore 001167698 and Justin Onoferychuk 001212560 - Racket Interpreter for CPSC 3740 - Course Project
 
 ;Test Helpers
 
@@ -43,7 +43,7 @@
 ;Arguments: rkt, the racket code AND state, the current state of the stack
 ;Returns: the evaluation of the code
 (define (execute rkt state)
-  (println (list rkt ': state))
+  ;(println (list rkt ': state))
   (if (pair? rkt)
       (if (null? rkt)
           '()
