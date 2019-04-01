@@ -10,7 +10,7 @@
 (define (startEval rkt) (execute rkt '()))
 
 (define (getPairWithKey key state)
-  ;;(println (list "Called getPairWithKey: " key " : in state : " state))
+  ;;(;;;println (list "Called getPairWithKey: " key " : in state : " state))
   (if (null? state)
       (error "Oops: undefined : " key)
       (if (pair? state)
@@ -24,7 +24,7 @@
 ;Arguments: rkt, the racket code AND state, the current state of the stack
 ;Returns: the evaluation of the code
 (define (execute rkt state)
-  (println (list rkt ': state))
+  ;(;;;println (list rkt ': state))
   (if (pair? rkt)
       (if (null? rkt)
           '()
@@ -61,7 +61,7 @@
                   [(equal? func 'quote) (eval_quote defi state)] ;quotes
                   [(equal? func 'lambda) (eval_lambda rkt '() state)]
                   [else
-                   ;;(println (list " rkt : " rkt " : func : " func " : defi : " defi " : state : " state))
+                   ;;(;;;println (list " rkt : " rkt " : func : " func " : defi : " defi " : state : " state))
                    (execute (cons (getPairWithKey func state) defi) state)
                    ])
                 )))
@@ -394,22 +394,21 @@
         (execute (third x) state)))
       (error "everything is on fire in eval_if."))
     (error "everything is on fire in eval_if.")))
+;eval_lamdba function tries to deal with lambda's it can deal with nested lambda,
+;so long as they just have one lamdba parameter.
+;bugs:
+;****** if parameter names match values from execute definition table an error will occured, lambda parameters should have been sanitized. 
+;****** Does not work at all with let. 
+;****** This version can't deal with multiple lambda parameters.
+;Arguments:
+;   lamb : the list of arguments to the function
+;   param : reminent from previous lambda expression
+;   state : state holds key value pairs which are used.
 
-
-;bug in design:
-; I have chosen not to deal with this format (lambda x x) (only deal with arguments as list (lambda (x) x) ...)
-;we could receive:
-; 0 to infinity arguments to the lambda
-; 0 to infinity parameters given to the lambda
-;we can result in:
-;a partially evaluated lambda
-;no action (nothing to evaluate) (no parameters to evaluate the lambda on)
-;a fully evaluated lambda that is executed (#arguments = #parameters)
-;a fully evaluated lambda that is executed, then dumped into a longer list (more parameters given than there are arguments in the lambda)
 (define (eval_lambda lamb param state)  
-  ;(println (list 'lamb:  lamb))
-  ;(println (list 'param:  param))
-  ;(println (list 'state:  state))
+  ;(;;;println (list 'lamb:  lamb))
+  ;(;;;println (list 'param:  param))
+  ;(;;;println (list 'state:  state))
   (let ([variable  (car (car (cdr lamb)))][body  (cdr (cdr lamb))])
     (if (null? (cdr body))
       (execute (car body) (findReplace variable state state))
